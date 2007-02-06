@@ -212,33 +212,6 @@ def shrink(a,b):
         a = a.swapaxes(0,dim_idx)           # swap working dim back
     return a
 
-def extrapolate(a, axis=0, bc='zero'):
-    """
-    Return array extrapolate by a specified boundary condition in a given axis.
-    
-    a = extrapolate(ndarray, axis=0, bc='constant')
-        The input array is extrapolated by one point at the two ends of a given
-        axis (default=0).  The returned array will be identical except it will have
-        a dimension size two larger in the specified axis.  Interier points are
-        unaffected.  Possible choices for boundary conditions are:
-            'zero' - Zero gradient (default)
-            'constant' - Constant gradient (assumes uniform grid)
-    """
-    a = a.swapaxes(0,axis)
-    sz = list(a.shape)
-    sz[0] += 2
-    b = empty(sz,dtype=a.dtype)
-    b[1:-1,:] = a[:]
-    if bc=='constant':
-        b[0] = b[1] - (b[2] - b[1])
-        b[-1] = b[-2] - (b[-3] - b[-2])
-    else:
-        b[0] = b[1]
-        b[-1] = b[-2]
-    b = b.swapaxes(0,axis)
-    print b.shape
-    return b
-
 def arg_nearest(x, xo, scale=None):
     """
     idx = arg_nearest(x, xo, scale=None)

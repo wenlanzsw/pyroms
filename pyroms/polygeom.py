@@ -124,9 +124,9 @@ except:
         return np.asarray(out,dtype=bool)
 
 
-class Polygon(np.ndarray):
+class Polygeom(np.ndarray):
     """
-    Polygon class
+    Polygeom -- Polygon geometry class
     """
 
     def __new__(self, verts):
@@ -150,7 +150,7 @@ class Polygon(np.ndarray):
 
         self.verts = verts
         
-        return verts.view(Polygon).copy()
+        return verts.view(Polygeom).copy()
     
     
     def inside(self,points):
@@ -187,7 +187,7 @@ if __name__ == '__main__':
                       [0.85,0.15],
                       [0.85,0.85],
                       [0.15,0.85]])
-    pa = Polygon(verts)
+    pa = Polygeom(verts)
     print pa.area()
     print (0.85-0.15)**2
     
@@ -207,7 +207,7 @@ if __name__ == '__main__':
                       [0.85,0.15],
                       [0.85,0.85],
                       [0.15,0.85]])
-    pb = Polygon(verts)
+    pb = Polygeom(verts)
     inside = pb.inside(grid)
     pl.plot(grid[:,0][inside], grid[:,1][inside], 'g.')
     pl.plot(grid[:,0][~inside], grid[:,1][~inside],'r.')
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     grid = np.mgrid[0:1:1000j,0:1:1000j].reshape(2,-1).swapaxes(0,1)
     xp = np.sin(np.arange(0,np.pi,0.01))
     yp = np.cos(np.arange(0,np.pi,0.01))
-    pc = Polygon(np.hstack([xp[:,np.newaxis],yp[:,np.newaxis]]))
+    pc = Polygeom(np.hstack([xp[:,np.newaxis],yp[:,np.newaxis]]))
     print "%d points inside %d vertex poly..." % (grid.size/2,len(verts)),
     sys.stdout.flush()
     inside = pc.inside(grid)
