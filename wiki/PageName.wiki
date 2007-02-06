@@ -1,0 +1,5 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+Pyroms is a suite of tools for working with the Regional Ocean Modeling System.  The tools are based on numpy, matplotlib (with the basemap toolkit), and netcdf4-python.
