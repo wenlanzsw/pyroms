@@ -1,3 +1,8 @@
-#summary Pyroms is a suite of tools for working with the Regional Ocean Modeling System.  The tools are based on numpy, matplotlib (with the basemap toolkit), and netcdf4-python.
+#summary Pyroms is a suite of tools for working with the Regional Ocean Modeling System.
 
 = Introduction =
+
+The tools are based on [http://python.org python], [http://www.scipy.org/numpy numpy], [http://matplotlib.sourceforge.net matplotlib] (with the [http://matplotlib.sourceforge.net/matplotlib.toolkits.basemap.basemap.html basemap toolkit]), and [http://code.google.com/p/netcdf4-python/ netcdf4-python].
+
+
+
