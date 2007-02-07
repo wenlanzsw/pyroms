@@ -422,75 +422,48 @@ class Grid(object):
         nc.createVariable('spherical', 'S1', ())
         nc.variables['spherical'] = 'F'
         
+        def write_nc_var(var, name, dimensions, units=None):
+            nc.createVariable(name, 'f8', dimensions)
+            if units is not None:
+                nc.variables[name].units = units
+            nc.variables[name][:] = _nn_extrap(var)
+        
+        write_nc_var(self.pm, 'pm', ('eta_rho', 'xi_rho'), 'meters-1')
+        write_nc_var(self.pn, 'pn', ('eta_rho', 'xi_rho'), 'meters-1')
+        write_nc_var(self.dmde, 'dmde', ('eta_rho', 'xi_rho'))
+        write_nc_var(self.dndx, 'dndx', ('eta_rho', 'xi_rho'))
+        write_nc_var(self.angle, 'angle', ('eta_rho', 'xi_rho'))
+        
+        write_nc_var(self.f, 'f', ('eta_rho', 'xi_rho'), 'seconds-1')
+        write_nc_var(self.h, 'h', ('eta_rho', 'xi_rho'), 'meters')
+        
+        write_nc_var(self.mask_rho, 'mask_rho', ('eta_rho', 'xi_rho'))
+        write_nc_var(self.mask_u, 'mask_u', ('eta_u', 'xi_u'))
+        write_nc_var(self.mask_v, 'mask_v', ('eta_v', 'xi_v'))
+        write_nc_var(self.mask_psi, 'mask_psi', ('eta_psi', 'xi_psi'))
+        
         if full_output:
-            nc.createVariable('x_vert', 'f8', ('eta_vert', 'xi_vert'))
-            nc.variables['x_vert'].units = 'meters'
-            nc.variables['x_vert'][:] = self.x_vert
-            
-            nc.createVariable('y_vert', 'f8', ('eta_vert', 'xi_vert'))
-            nc.variables['y_vert'].units = 'meters'
-            nc.variables['y_vert'][:] = self.y_vert
-            
-            nc.createVariable('x_rho', 'f8', ('eta_rho', 'xi_rho'))
-            nc.variables['x_rho'].units = 'meters'
-            nc.variables['x_rho'][:] = self.x_rho
-            
-            nc.createVariable('y_rho', 'f8', ('eta_rho', 'xi_rho'))
-            nc.variables['y_rho'].units = 'meters'
-            nc.variables['y_rho'][:] = self.y_rho
-            
-            nc.createVariable('x_u', 'f8', ('eta_u', 'xi_u'))
-            nc.variables['x_u'].units = 'meters'
-            nc.variables['x_u'][:] = self.x_u
-            
-            nc.createVariable('y_v', 'f8', ('eta_v', 'xi_v'))
-            nc.variables['y_v'].units = 'meters'
-            nc.variables['y_v'][:] = self.y_v
-            
-            nc.createVariable('x_psi', 'f8', ('eta_psi', 'xi_psi'))
-            nc.variables['x_psi'].units = 'meters'
-            nc.variables['x_psi'][:] = self.x_psi
-            
-            nc.createVariable('y_psi', 'f8', ('eta_psi', 'xi_psi'))
-            nc.variables['y_psi'].units = 'meters'
-            nc.variables['y_psi'][:] = self.y_psi
-        
-        nc.createVariable('pm', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['pm'].units = 'meters-1'
-        nc.variables['pm'][:] = self.pm
-        
-        nc.createVariable('pn', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['pn'].units = 'meters-1'
-        nc.variables['pn'][:] = self.pn
-        
-        nc.createVariable('mask_rho', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['mask_rho'][:] = self.mask_rho
-        
-        nc.createVariable('mask_u', 'f8', ('eta_u', 'xi_u'))
-        nc.variables['mask_u'][:] = self.mask_u
-        
-        nc.createVariable('mask_v', 'f8', ('eta_v', 'xi_v'))
-        nc.variables['mask_v'][:] = self.mask_v
-        
-        nc.createVariable('mask_psi', 'f8', ('eta_psi', 'xi_psi'))
-        nc.variables['mask_psi'][:] = self.mask_psi
-        
-        nc.createVariable('dndx', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['dndx'][:] = self.dndx
-        
-        nc.createVariable('dmde', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['dmde'][:] = self.dmde
-        
-        nc.createVariable('angle', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['angle'][:] = self.angle
-        
-        nc.createVariable('f', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['f'].units = 'seconds-1'
-        nc.variables['f'][:] = self.f
-        
-        nc.createVariable('h', 'f8', ('eta_rho', 'xi_rho'))
-        nc.variables['h'].units = 'meters'
-        nc.variables['h'][:] = self.h
+            write_nc_var(self.x_vert, 'x_vert', ('eta_vert', 'xi_vert'), 'meters')
+            write_nc_var(self.y_vert, 'y_vert', ('eta_vert', 'xi_vert'), 'meters')
+            write_nc_var(self.x_rho, 'x_rho', ('eta_rho', 'xi_rho'), 'meters')
+            write_nc_var(self.y_rho, 'y_rho', ('eta_rho', 'xi_rho'), 'meters')
+            write_nc_var(self.x_u, 'x_u', ('eta_u', 'xi_u'), 'meters')
+            write_nc_var(self.y_u, 'y_u', ('eta_u', 'xi_u'), 'meters')
+            write_nc_var(self.x_v, 'x_v', ('eta_v', 'xi_v'), 'meters')
+            write_nc_var(self.y_v, 'y_v', ('eta_v', 'xi_v'), 'meters')
+            write_nc_var(self.x_psi, 'x_psi', ('eta_psi', 'xi_psi'), 'meters')
+            write_nc_var(self.y_psi, 'y_psi', ('eta_psi', 'xi_psi'), 'meters')
+            if geographic:
+                write_nc_var(self.lon_vert, 'lon_vert', ('eta_vert', 'xi_vert'), 'meters')
+                write_nc_var(self.lat_vert, 'lat_vert', ('eta_vert', 'xi_vert'), 'meters')
+                write_nc_var(self.lon_rho, 'lon_rho', ('eta_rho', 'xi_rho'), 'meters')
+                write_nc_var(self.lat_rho, 'lat_rho', ('eta_rho', 'xi_rho'), 'meters')
+                write_nc_var(self.lon_u, 'lon_u', ('eta_u', 'xi_u'), 'meters')
+                write_nc_var(self.lat_u, 'lat_u', ('eta_u', 'xi_u'), 'meters')
+                write_nc_var(self.lon_v, 'lon_v', ('eta_v', 'xi_v'), 'meters')
+                write_nc_var(self.lat_v, 'lat_v', ('eta_v', 'xi_v'), 'meters')
+                write_nc_var(self.lon_psi, 'lon_psi', ('eta_psi', 'xi_psi'), 'meters')
+                write_nc_var(self.lat_psi, 'lat_psi', ('eta_psi', 'xi_psi'), 'meters')
         
         nc.close()
     
