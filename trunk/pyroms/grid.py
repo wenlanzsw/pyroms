@@ -39,12 +39,22 @@ import os
 import warnings
 import roms
 from datetime import datetime, timedelta
+from matplotlib.toolkits.basemap import Basemap
+from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 
-try:
-    from matplotlib.toolkits.basemap import Basemap
-    from matplotlib.toolkits.basemap.greatcircle import GreatCircle
-except:
-    warning, 'Basemap toolkit not found, cannot project geographic grids'
+def _nn_extrap(a):
+    """extrapolate masked points in a 2D array to nearest neighbor"""
+    if not isinstance(a, ma.MaskedArray): return a
+    aout = a.data
+    agood = a[~a.mask]
+    ii, jj = indices(a.shape)
+    igood = ii[~a.mask]
+    jgood = jj[~a.mask]
+    for i, j in zip(*where(a.mask)):
+        d = (i-igood)**2 + (j-jgood)**2
+        aout[i,j] = agood[d.flat==d.min()].mean()
+    return aout
+
 
 class Grid(object):
     
@@ -90,46 +100,30 @@ class Grid(object):
         self.pn = pn
         self.angle = angle
         
-        self.masked=False
         if mask is not None:
             self.mask_rho = mask
-            self.masked = True
+        else:
+            self.mask_rho = ones((self.Mp, self.Lp), dtype='d')
         
         if isinstance(self.x_vert, ma.MaskedArray):
             mask = (self.x_vert.mask[:-1,:-1] | self.x_vert.mask[1:,:-1] | \
                     self.x_vert.mask[:-1,1:] | self.x_vert.mask[1:,1:])
-            if self.masked:
-                self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
-            else:
-                self.mask_rho = asarray(~mask, dtype='d')
-            self.masked = True
+            self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
         
         if isinstance(self.y_vert, ma.MaskedArray):
             mask = (self.y_vert.mask[:-1,:-1] | self.y_vert.mask[1:,:-1] | \
                     self.y_vert.mask[:-1,1:] | self.y_vert.mask[1:,1:])
-            if self.masked:
-                self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
-            else:
-                self.mask_rho = asarray(~mask, dtype='d')
-            self.masked = True
+            self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
         
         if isinstance(self.lon_vert, ma.MaskedArray):
             mask = (self.lon_vert.mask[:-1,:-1] | self.lon_vert.mask[1:,:-1] | \
                     self.lon_vert.mask[:-1,1:] | self.lon_vert.mask[1:,1:])
-            if self.masked:
-                self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
-            else:
-                self.mask_rho = asarray(~mask, dtype='d')
-            self.masked = True
+            self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
         
         if isinstance(self.lat_vert, ma.MaskedArray):
             mask = (self.lat_vert.mask[:-1,:-1] | self.lat_vert.mask[1:,:-1] | \
                     self.lat_vert.mask[:-1,1:] | self.lat_vert.mask[1:,1:])
-            if self.masked:
-                self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
-            else:
-                self.mask_rho = asarray(~mask, dtype='d')
-            self.masked = True
+            self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
         
         if (self.x_vert is None or self.y_vert is None) and self.geographic:
             self.calc_projection()
@@ -150,15 +144,12 @@ class Grid(object):
         self.N = N
     
     def _get_mask_u(self):
-        if self.mask_rho is None: return
         return self.mask_rho[:,1:]*self.mask_rho[:,:-1]
     
     def _get_mask_v(self):
-        if self.mask_rho is None: return
         return mask_rho[1:,:]*mask_rho[:-1,:]
     
     def _get_mask_psi(self):
-        if self.mask_rho is None: return
         mask_psi = self.mask_rho[1:,1:]*self.mask_rho[:-1,1:]* \
                    self.mask_rho[1:,:-1]*self.mask_rho[-1:,-1:]
     
@@ -312,17 +303,25 @@ class Grid(object):
         else:
             self.proj = proj
         
-        if isinstance(self.lat_vert, ma.MaskedArray): 
+        if isinstance(self.lat_vert, ma.MaskedArray):
+            mask_lat = self.lat_vert.mask 
             lat_temp = self.lat_vert.filled(0.0)
         else:
             lat_temp = self.lat_vert
         
         if isinstance(self.lon_vert, ma.MaskedArray): 
+            mask_lon = self.lon_vert.mask
             lon_temp = self.lon_vert.filled(0.0)
         else:
             lon_temp = self.lon_vert
         
         self.x_vert, self.y_vert = self.proj(lon_temp, lat_temp)
+        
+        if isinstance(self.lon_vert, ma.MaskedArray):
+            self.x_vert = ma.masked_array(self.x_vert, mask=mask_lon)
+        
+        if isinstance(self.lat_vert, ma.MaskedArray):
+            self.y_vert = ma.masked_array(self.y_vert, mask=mask_lat)
     
     def orthogonality(self):
         '''
@@ -355,14 +354,10 @@ class Grid(object):
         if geographic is None:
             geographic = self.geographic
         
-        # Get unmasked (wet) rho-points
-        if self.masked is False:
-            mask = ones((self.Mp, self.Lp))
-        else:
-            mask = self.mask_rho
+        mask = self.mask_rho
         
         if inverse:
-            mask = asarray(~bool_(a), dtype='d')
+            mask = asarray(~bool_(mask), dtype='d')
         
         iwater = mask == 1.0
         if geographic:
@@ -370,7 +365,8 @@ class Grid(object):
             y_wet = self._get_lat_rho()[iwater]
         else:
             x_wet = self._get_x_rho()[iwater]
-            y_wet = self._get_y_rho()[iwater]            
+            y_wet = self._get_y_rho()[iwater]
+        
         mask_wet = mask[iwater]
         
         inside = roms.Polygon(polyverts).inside(zip(x_wet, y_wet))
@@ -381,7 +377,6 @@ class Grid(object):
             if inverse:
                 mask = asarray(~bool_(a), dtype='d')
             self.mask_rho = mask
-            self.masked = True
     
     def write_roms_grid(self, filename='ocean_grd.nc', full_output=True):
         
@@ -760,6 +755,12 @@ def nc_grid(nc):
         
         x, y = rho_to_vert(xr, yr, pm, pn, ang)
         
+        if 'x_psi' in nc.variables.keys() and 'y_psi' in nc.variables.keys():
+            xp = nc.variables['x_psi'][:]
+            yp = nc.variables['y_psi'][:]
+            x[1:-1, 1:-1] = xp
+            y[1:-1, 1:-1] = yp
+        
         return Grid(x=x, y=y, **variables)
 
 
@@ -783,7 +784,7 @@ def test_gridgen():
     # Islands for masking
     xmask = array([8., 7., 6., 7.])
     ymask = array([4., 5., 4., 3.])
-    grid.maskpoly_xy(zip(xmask, ymask))
+    grid.maskpoly(zip(xmask, ymask))
     
     return grid
 
@@ -877,10 +878,11 @@ def test_rho_to_vert():
     # pl.plot(x.T, y.T, '-r')
     # pl.show()
 
+
 if __name__ == '__main__':
     test_make_grid()
     test_gridgen()
     test_grid_3d()
     test_nc_grid()
     test_rho_to_vert()
-    
+
