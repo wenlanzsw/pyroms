@@ -1,14 +1,12 @@
 # ROMS class
 # (c) Rob Hetland, 2005
 ''' 
-ROMS class:
-  multicdf
+PYROMS
 '''
 
 from Dataset import Dataset
-from cdftime import time
-from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, \
-                       extrapolate, gc_dist
+from roms_time import roms_time
+from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist
 from velocity import velocity
 from polygeom import Polygeom
 from polyclick import PolyClick
