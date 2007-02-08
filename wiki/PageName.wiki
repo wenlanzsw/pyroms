@@ -2,7 +2,4 @@
 
 = Introduction =
 
-The tools are based on [http://python.org python], [http://www.scipy.org/numpy numpy], [http://matplotlib.sourceforge.net matplotlib] (with the [http://matplotlib.sourceforge.net/matplotlib.toolkits.basemap.basemap.html basemap toolkit]), and [http://code.google.com/p/netcdf4-python/ netcdf4-python].
-
-
-
+The tools are based on [http://python.org python], [http://numpy.scipy.org/numpy numpy] (with [http://www.scipy.org scipy] also recommended), [http://matplotlib.sourceforge.net matplotlib] (with the [http://matplotlib.sourceforge.net/matplotlib.toolkits.basemap.basemap.html basemap toolkit]), and [http://code.google.com/p/netcdf4-python/ netcdf4-python].  The grid generation is based on the command line utility [http://www.marine.csiro.au/~sakov/  gridgen].  All of these packages should be installed for your best and most fulfilling pyroms experience.
