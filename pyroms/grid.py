@@ -147,7 +147,7 @@ class Grid(object):
         return self.mask_rho[:,1:]*self.mask_rho[:,:-1]
     
     def _get_mask_v(self):
-        return mask_rho[1:,:]*mask_rho[:-1,:]
+        return self.mask_rho[1:,:]*self.mask_rho[:-1,:]
     
     def _get_mask_psi(self):
         mask_psi = self.mask_rho[1:,1:]*self.mask_rho[:-1,1:]* \
@@ -448,7 +448,7 @@ class Grid(object):
             write_nc_var(self.y_v, 'y_v', ('eta_v', 'xi_v'), 'meters')
             write_nc_var(self.x_psi, 'x_psi', ('eta_psi', 'xi_psi'), 'meters')
             write_nc_var(self.y_psi, 'y_psi', ('eta_psi', 'xi_psi'), 'meters')
-            if geographic:
+            if self.geographic:
                 write_nc_var(self.lon_vert, 'lon_vert', ('eta_vert', 'xi_vert'), 'meters')
                 write_nc_var(self.lat_vert, 'lat_vert', ('eta_vert', 'xi_vert'), 'meters')
                 write_nc_var(self.lon_rho, 'lon_rho', ('eta_rho', 'xi_rho'), 'meters')
@@ -853,8 +853,14 @@ def test_nc_grid():
     
     grd = nc_grid('/Users/rob/Models/roms/roms-3.0/ocean_his.nc')
     print grd.__dict__.keys()
-    
 
+def test_write_roms_grid():
+    """test write_roms_grid method of Grid class"""
+    y, x = mgrid[0:1:100j, 0:1:100j]
+    grd = Grid(x, y)
+    grd.f = 1e-4
+    grd.h = 10.0
+    grd.write_roms_grid('foo.nc')
 
 def test_rho_to_vert():
     yv, xv = mgrid[0:20, 0:20:0.5]
