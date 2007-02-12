@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
 """
 grid.py
 
@@ -61,7 +62,7 @@ class Grid(object):
     def __init__(self, x=None, y=None,  \
                        lon=None, lat=None, \
                        pm=None, pn=None, angle=None, \
-                       mask=None, \
+                       mask=None, proj=None, \
                        f=None, h=None, \
                        theta_s=None, theta_b=None, hc=None, N=None):
         """
@@ -83,6 +84,10 @@ class Grid(object):
         self.geographic=False
         if  lon is not None and lat is not None:
             self.geographic=True
+            if proj is None:
+                self.proj = Basemap(projection='merc', resolution=None, lat_ts=0.0)
+            else:
+                self.proj = proj
         
         # Define relevant shapes
         if x is not None and y is not None:
@@ -297,12 +302,7 @@ class Grid(object):
         self.angle = arctan2(diff(0.5*(self.y_vert[1:,:]+self.y_vert[:-1,:])), \
                            diff(0.5*(self.x_vert[1:,:]+self.x_vert[:-1,:])))
     
-    def calc_projection(self, proj=None):
-        if proj is None:
-            self.proj = proj = Basemap(projection='merc', resolution=None, lat_ts=0.0)
-        else:
-            self.proj = proj
-        
+    def calc_projection(self, proj=None):        
         if isinstance(self.lat_vert, ma.MaskedArray):
             mask_lat = self.lat_vert.mask 
             lat_temp = self.lat_vert.filled(0.0)
@@ -323,7 +323,7 @@ class Grid(object):
         if isinstance(self.lat_vert, ma.MaskedArray):
             self.y_vert = ma.masked_array(self.y_vert, mask=mask_lat)
     
-    def orthogonality(self):
+    def calc_orthogonality(self):
         '''
         Calculate orthogonality error in radiens
         '''
@@ -521,6 +521,7 @@ class Grid(object):
 
 
 def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \
+            geographic=False, proj=None, \
             nnodes=14, precision=1.0e-12, newton=1, thin=1, \
             checksimplepoly=1, nppe=3, \
             verbose=False, windows=False):
@@ -542,6 +543,15 @@ def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \
             corner of the domain.  There may be more than one posibility,
             but the output grid will not change.  See the gridgen documentation
             for more details (this is the 'starred' entry in the bry file)
+        geographic:
+            If geographic is True (default is False), the coordinates are
+            projected using the Basemap instance proj.  The grid instance
+            that is created is a geographic grid, with both lon/lat and
+            x/y defined.
+        proj:
+            Is the Basemap instance used to project the geographic coordinates
+            to cartesian coordinates before calling gridgen.  The default is
+                    proj = Basemap(projection='merc', lat_ts=0.0)
         shape:
             the number of points in the grid (ny, nx).  When creating a
             ROMS grid, note that Lm = nx-3 and Mm = ny-3.
@@ -559,6 +569,15 @@ def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \
     returns:
         ROMS Grid instance.
     """
+    xbry = asarray(xbry)
+    ybry = asarray(ybry)
+    beta = asarray(beta)
+    
+    if proj is None:
+        proj = Basemap(projection='merc', resolution=None, lat_ts=0.0)
+        
+    if geographic:
+        xbry, ybry = proj(xbry, ybry)
     
     assert beta.sum() == 4.0, 'sum of beta must be 4.0'
     star = ['']*len(xbry)
@@ -648,9 +667,16 @@ def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \
         xp = ma.masked_where(isnan(xp), xp)
         yp = ma.masked_where(isnan(yp), yp)
     
-    grd = Grid(x=xp, y=yp)
-    grd.calc_metrics()
-    return grd
+    if geographic:
+        if isinstance(xp, ma.MaskedArray): xp=xp.filled(nan)
+        if isinstance(yp, ma.MaskedArray): yp=yp.filled(nan)
+        lon, lat = proj(xp, yp, inverse=True)
+        lon = ma.masked_where(isnan(lon), lon)
+        lat = ma.masked_where(isnan(lat), lat)
+        return Grid(lon=lon, lat=lat, proj=proj)
+    else:
+        return Grid(x=xp, y=yp)
+    
 
 def rho_to_vert(xr, yr, pm, pn, ang):
     Mp, Lp = xr.shape
@@ -860,7 +886,16 @@ def test_write_roms_grid():
     grd = Grid(x, y)
     grd.f = 1e-4
     grd.h = 10.0
-    grd.write_roms_grid('foo.nc')
+    grd.write_roms_grid('cart_test.nc')
+    print ' ### wrote cart_test.nc'
+    
+    lat, lon = mgrid[43:45:100j, -68:-70:100j]
+    grdg = Grid(lon=lon, lat=lat)
+    grdg.h = 10.
+    grdg.f = 1.0e-4
+    grdg.write_roms_grid('geo_test.nc')
+    print ' ### wrote geo_test.nc'
+    
 
 def test_rho_to_vert():
     yv, xv = mgrid[0:20, 0:20:0.5]
@@ -886,6 +921,7 @@ def test_rho_to_vert():
 
 
 if __name__ == '__main__':
+    test_write_roms_grid()
     test_make_grid()
     test_gridgen()
     test_grid_3d()
