@@ -8,7 +8,7 @@ try:
     import netCDF4_classic
     try:
         import MFnetCDF4_classic
-    else:
+    except:
         import MFDataset
     
     def Dataset(ncfile):
@@ -19,7 +19,7 @@ try:
         elif isinstance(ncfile, list) or isinstance(ncfile, tuple):
             try:
                 return MFnetCDF4_classic.Dataset(sorted(ncfile))
-            else:
+            except:
                 return MFDataset.Dataset(sorted(ncfile))
         elif hasattr(ncfile, 'variables'):  # accept any oject with a variables attribute
             assert isinstance(ncfile.variables, dict), \
