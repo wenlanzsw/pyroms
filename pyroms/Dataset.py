@@ -6,10 +6,7 @@
 try:
     import netCDF4
     import netCDF4_classic
-    try:
-        import MFnetCDF4_classic
-    except:
-        import MFDataset
+    import MFnetCDF4_classic
     
     def Dataset(ncfile):
         """Return an appropriate netcdf object given a file string, a list of files
@@ -17,10 +14,7 @@ try:
         if isinstance(ncfile, str):
             return netCDF4.Dataset(ncfile, 'r')
         elif isinstance(ncfile, list) or isinstance(ncfile, tuple):
-            try:
-                return MFnetCDF4_classic.Dataset(sorted(ncfile))
-            except:
-                return MFDataset.Dataset(sorted(ncfile))
+            return MFnetCDF4_classic.Dataset(sorted(ncfile))
         elif hasattr(ncfile, 'variables'):  # accept any oject with a variables attribute
             assert isinstance(ncfile.variables, dict), \
                    'variables attribute must be a dictionary'
