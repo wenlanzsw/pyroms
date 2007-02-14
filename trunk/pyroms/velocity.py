@@ -7,7 +7,7 @@ Created by Rob Hetland on 2007-01-13.
 Copyright (c) 2007 Texas A&M Univsersity. All rights reserved.
 """
 
-import roms
+import pyroms
 from numpy import *
 
 class velocity (object):

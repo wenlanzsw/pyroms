@@ -3,7 +3,7 @@ Tools for working with ROMS model input and output.
 """
 
 from numpy import *
-from roms import Dataset
+from pyroms import Dataset
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 
 gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
