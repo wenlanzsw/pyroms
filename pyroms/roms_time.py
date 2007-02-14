@@ -8,7 +8,7 @@ from numpy import *
 from netcdftime import utime
 import netCDF4, datetime
 from pylab import date2num
-from roms import Dataset
+from pyroms import Dataset
 
 class roms_time (ndarray):
     

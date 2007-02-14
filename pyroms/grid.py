@@ -38,7 +38,7 @@ import pylab as pl
 import netCDF4_classic as netcdf
 import os
 import warnings
-import roms
+import pyroms
 from datetime import datetime, timedelta
 from matplotlib.toolkits.basemap import Basemap
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
@@ -369,7 +369,7 @@ class Grid(object):
         
         mask_wet = mask[iwater]
         
-        inside = roms.Polygon(polyverts).inside(zip(x_wet, y_wet))
+        inside = pyroms.Polygon(polyverts).inside(zip(x_wet, y_wet))
         
         if any(inside):
             mask_wet[inside] = 0.0
@@ -389,7 +389,7 @@ class Grid(object):
         # Write ROMS grid to file
         nc = netcdf.Dataset(filename, 'w', format='NETCDF3_CLASSIC')
         nc.Description = 'ROMS grid'
-        nc.Author = 'roms.gridgen'
+        nc.Author = 'pyroms.gridgen'
         nc.Created = datetime.now().isoformat()
         nc.type = 'ROMS GRD file'
         
@@ -732,7 +732,7 @@ def nc_grid(nc):
     information.  The NetCDF file must contain either 'vert' veriables, or the
     verticies will be calculated with 'rho' and angle points.
     '''
-    nc = roms.Dataset(nc)
+    nc = pyroms.Dataset(nc)
     
     varlist = ['h', 'f', 'pm', 'pn', 'angle', 'theta_s', 'theta_b', 'hc']
     variables={}
