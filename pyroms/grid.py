@@ -155,8 +155,8 @@ class Grid(object):
         return self.mask_rho[1:,:]*self.mask_rho[:-1,:]
     
     def _get_mask_psi(self):
-        mask_psi = self.mask_rho[1:,1:]*self.mask_rho[:-1,1:]* \
-                   self.mask_rho[1:,:-1]*self.mask_rho[-1:,-1:]
+        return mask_psi = self.mask_rho[1:,1:]*self.mask_rho[:-1,1:]* \
+                          self.mask_rho[1:,:-1]*self.mask_rho[-1:,-1:]
     
     def _get_x_rho(self):
         if self.x_vert is None or self.y_vert is None: return
