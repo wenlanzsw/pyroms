@@ -42,19 +42,29 @@ import pyroms
 from datetime import datetime, timedelta
 from matplotlib.toolkits.basemap import Basemap
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
+from scipy.sandbox import delaunay
 
-def _nn_extrap(a):
-    """extrapolate masked points in a 2D array to nearest neighbor"""
-    if not isinstance(a, ma.MaskedArray): return a
-    aout = a.data
-    agood = a[~a.mask]
-    ii, jj = indices(a.shape)
-    igood = ii[~a.mask]
-    jgood = jj[~a.mask]
-    for i, j in zip(*where(a.mask)):
-        d = (i-igood)**2 + (j-jgood)**2
-        aout[i,j] = agood[d.flat==d.min()].mean()
-    return aout
+
+def extrapolate_mask(a, mask=None):
+    if mask is None and not isinstance(a, ma.MaskedArray): 
+        return a
+    if mask is None:
+        mask = a.mask
+    else:
+        if isinstance(a, ma.MaskedArray):
+            mask = mask | a.mask
+    a = a[:]    # make a copy of array a
+    jj, ii = indices(a.shape)
+    igood = ii[~mask]
+    jgood = jj[~mask]
+    ibad = ii[mask]
+    jbad = jj[mask]
+    tri = delaunay.Triangulation(igood, jgood)
+    # interpolate from the good points (mask == 1)
+    interp = tri.nn_extrapolator(a[~mask])
+    # to the bad points (mask == 0)
+    a[mask] = interp(ibad, jbad)
+    return a
 
 
 class Grid(object):
@@ -280,8 +290,13 @@ class Grid(object):
             self.pn = 1.0 / sqrt(diff(x_temp, axis=0)**2 + diff(y_temp, axis=0)**2)
         
         if any(~isfinite(self.pm)) or any(~isfinite(self.pm)):
-             self.pm = ma.masked_where(~isfinite(self.pm), self.pm)
-             self.pn = ma.masked_where(~isfinite(self.pn), self.pn)
+            self.pm = ma.masked_where(~isfinite(self.pm), self.pm)
+            self.pn = ma.masked_where(~isfinite(self.pn), self.pn)
+        
+        
+        
+        self.pm = extrapolate_mask(self.pm, mask=(self.mask==0.0))
+        self.pn = extrapolate_mask(self.pn, mask=(self.mask==0.0))
         
         if isinstance(self.pn, ma.MaskedArray):
             self.dndx = ma.zeros((self.Mp, self.Lp), dtype='d')
@@ -301,6 +316,8 @@ class Grid(object):
         
         self.angle = arctan2(diff(0.5*(self.y_vert[1:,:]+self.y_vert[:-1,:])), \
                            diff(0.5*(self.x_vert[1:,:]+self.x_vert[:-1,:])))
+        
+        self.angle = extrapolate_mask(self.angle, mask=(self.mask==0.0))
     
     def calc_projection(self, proj=None):        
         if isinstance(self.lat_vert, ma.MaskedArray):
@@ -369,7 +386,7 @@ class Grid(object):
         
         mask_wet = mask[iwater]
         
-        inside = pyroms.Polygon(polyverts).inside(zip(x_wet, y_wet))
+        inside = pyroms.Polygeom(polyverts).inside(zip(x_wet, y_wet))
         
         if any(inside):
             mask_wet[inside] = 0.0
@@ -378,7 +395,7 @@ class Grid(object):
                 mask = asarray(~bool_(a), dtype='d')
             self.mask_rho = mask
     
-    def write_roms_grid(self, filename='ocean_grd.nc', full_output=True):
+    def write_roms_grid(self, filename='ocean_grd.nc', full_output=True, verbose=False):
         
         Mp, Lp = self.x_rho.shape
         M, L = self.x_psi.shape
@@ -421,7 +438,9 @@ class Grid(object):
             nc.createVariable(name, 'f8', dimensions)
             if units is not None:
                 nc.variables[name].units = units
-            nc.variables[name][:] = _nn_extrap(var)
+            nc.variables[name][:] = extrapolate_mask(var)
+            if verbose:
+                print ' ... wrote ', name
         
         write_nc_var(self.pm, 'pm', ('eta_rho', 'xi_rho'), 'meters-1')
         write_nc_var(self.pn, 'pn', ('eta_rho', 'xi_rho'), 'meters-1')
