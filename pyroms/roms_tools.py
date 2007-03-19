@@ -15,6 +15,12 @@ Usage: dist = roms.gc_dist(lon1, lat1, lon2, lat2)
        All inputs can be arrays, and obey array broadcasting.
 ''')
 
+def rot2d(x, y, ang):
+    'rotate vectors by geometric angle'
+    xr = x*cos(ang) - y*sin(ang)
+    yr = x*sin(ang) + y*cos(ang)
+    return xr, yr
+
 def nanmask(a):
     return ma.masked_where(isnan(a), a)
 

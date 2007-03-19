@@ -6,7 +6,7 @@ PYROMS
 
 from Dataset import Dataset
 from roms_time import roms_time
-from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist
+from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, rot2d
 from velocity import velocity
 from polygeom import Polygeom
 from polyclick import PolyClick
