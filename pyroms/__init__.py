@@ -12,6 +12,7 @@ from polygeom import Polygeom
 from polyclick import PolyClick
 from grid import Grid, gridgen, nc_grid
 from ocean import rho_stp, o2_sat
+from depths import Depths, nc_depths
 
 __authors__ = ['Robert Hetland <hetland@tamu.edu>']
 __version__ = '0.4.5'
