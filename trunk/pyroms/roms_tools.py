@@ -63,6 +63,7 @@ def zatw(ncfile, time=False):
     
     ncfile - NetCDF file to use (a ROMS history file or netcdf object).
     """
+    
     nc = Dataset(ncfile)
     h = nc.variables['h'][:]
     hc = nc.variables['hc'][:]
@@ -124,7 +125,7 @@ def scoordw(h,hc,theta_b,theta_s,N):
         z_w[k,:]=(sc_w[k]-Cs_w[k])*hc + Cs_w[k]*h
     return(squeeze(z_w))
 
-def isoslice(var,prop,isoval=0,masking=True):
+def isoslice(var,prop,isoval=0,axis=0,masking=True):
     """
     result = isoslice(variable,property[,isoval=0])
     
@@ -147,6 +148,8 @@ def isoslice(var,prop,isoval=0,masking=True):
         raise ValueError, 'variable must have at least two dimensions'
     if not prop.shape == var.shape:
         raise ValueError, 'dimension of var and prop must be identical'
+    var = var.swapaxes(0, axis)
+    prop = prop.swapaxes(0, axis)
     prop=prop-isoval
     sz = shape(var)
     var = var.reshape(sz[0],-1)

@@ -48,7 +48,7 @@ class roms_time (ndarray):
         return self._utime.date2num(self.dates)
     
     def get_days(self):
-        self._utime.units = 'seconds'
+        self._utime.units = 'days'
         return self._utime.date2num(self.dates)
     
     def get_jd(self):
