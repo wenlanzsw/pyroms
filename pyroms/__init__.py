@@ -4,7 +4,7 @@
 PYROMS
 '''
 
-from Dataset import Dataset
+from Dataset import Dataset, MFDataset
 from roms_time import roms_time
 from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, \
                        rot2d, zslice, iso_integrate, surface
