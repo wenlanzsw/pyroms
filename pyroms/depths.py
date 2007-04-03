@@ -79,7 +79,10 @@ def nc_depths(nc, grid='rho', h=None):
         h = nc.variables['h'][:]
     theta_b = nc.variables['theta_b'][:]
     theta_s = nc.variables['theta_s'][:]
-    N = len(nc.dimensions['N'])
+    try:
+        N = len(nc.dimensions['N'])
+    except:
+        N = len(nc.dimensions['s_rho'])
     zeta = nc.variables['zeta']
     return Depths(hc, h, theta_b, theta_s, N, grid=grid, zeta=zeta)
 

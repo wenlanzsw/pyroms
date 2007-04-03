@@ -256,6 +256,8 @@ def zslice(z, q, qo, mode='spline'):
 def iso_integrate(z_w, q, z_iso):
     z_w = atleast_3d(z_w)
     q = atleast_3d(q)
+    if isinstance(z_iso, ma.MaskedArray):
+        z_iso = z_iso.filled(1e20)
     z_iso *= ones(q.shape[1:])
     return _iso.integrate(z_w, q, z_iso)
 
@@ -263,7 +265,11 @@ def surface(z, q, qo):
     z = atleast_3d(z)
     q = atleast_3d(q)
     assert z.shape == q.shape, 'z and q must be the same size'
-    return _iso.surface(z, q, qo)
+    z_iso = _iso.surface(z, q, qo)
+    if any(z_iso==1e20):
+        return ma.masked_where(z_iso==1e20, z_iso)
+    else:
+        return z_iso
 
 def arg_nearest(x, xo, scale=None):
     """
