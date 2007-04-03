@@ -21,6 +21,22 @@ try:
             return ncfile
         else:
             raise TypeError, 'type %s not supported' % type(ncfile)
+
+    def MFDataset(ncfile):
+        """Return an MFnetCDF4_classic object given a string.  The string is expanded
+           with wildcards using glob."""
+        if isinstance(ncfile, str):
+            return MFnetCDF4_classic.Dataset(ncfile)
+        elif isinstance(ncfile, list) or isinstance(ncfile, tuple):
+            return MFnetCDF4_classic.Dataset(sorted(ncfile))
+        elif hasattr(ncfile, 'variables'):  # accept any oject with a variables attribute
+            assert isinstance(ncfile.variables, dict), \
+                   'variables attribute must be a dictionary'
+            return ncfile
+        else:
+            raise TypeError, 'type %s not supported' % type(ncfile)
+            return MFnetCDF4_classic.Dataset(files)
+
 except:
     import pupynere
     import warnings

@@ -5,6 +5,7 @@ Tools for working with ROMS model input and output.
 from numpy import *
 from pyroms import Dataset
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
+import _iso
 
 gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
                     GreatCircle(6378137.0, 6356752.3142, \
@@ -24,7 +25,7 @@ def rot2d(x, y, ang):
 def nanmask(a):
     return ma.masked_where(isnan(a), a)
 
-def zatr(ncfile, time=False):
+def zatr(ncfile, time=None):
     """
     ZATR finds z at rho points (positive up, zero at rest surface) 
     If zeta = True for all times with the calculated value of zeta, 
@@ -41,21 +42,26 @@ def zatr(ncfile, time=False):
         sc_r = nc.variables['sc_r'][:]  # roms-2.x format
     except:
         sc_r = nc.variables['s_rho'][:]  # roms-3.x format
-    N = len(nc.dimensions['N'])
-    if time==False:
+    
+    if time is None:
         zeta = zeros(h.shape, 'd')
-        zeta = zeta[newaxis, :]
     else:
-        zeta = nc.variables['zeta'][:]
+        zeta = nc.variables['zeta'][time]
+    
+    if ndim(zeta) == 2:
+        zeta = zeta[newaxis, :]
+    
+    N = len(nc.dimensions['N'])
     ti = zeta.shape[0]
     z = empty((ti, N) + h.shape, 'd')
     for n in arange(ti):
         for  k in arange(N):
-            z0=(sc_r[k]-Cs_r[k])*hc + Cs_r[k]*h;
-            z[n,k,:] = z0 + zeta[n,:]*(1.0 + z0/h);
+            z0=(sc_r[k]-Cs_r[k])*hc + Cs_r[k]*h
+            z[n,k,:] = z0 + zeta[n,:]*(1.0 + z0/h)
+    
     return(squeeze(z))
 
-def zatw(ncfile, time=False):
+def zatw(ncfile, time=None):
     """
     ZATW finds z at w-points (positive up, zero at rest surface) 
     If zeta = True for all times with the calculated value of zeta, 
@@ -63,7 +69,6 @@ def zatw(ncfile, time=False):
     
     ncfile - NetCDF file to use (a ROMS history file or netcdf object).
     """
-    
     nc = Dataset(ncfile)
     h = nc.variables['h'][:]
     hc = nc.variables['hc'][:]
@@ -72,18 +77,23 @@ def zatw(ncfile, time=False):
         sc_w = nc.variables['sc_w'][:]  # roms-2.x format
     except:
         sc_w = nc.variables['s_w'][:]  # roms-3.x format
-    if time==False:
+    
+    if time is None:
         zeta = zeros(h.shape, 'd')
-        zeta = zeta[newaxis, :]
     else:
-        zeta = nc.variables['zeta'][:]
+        zeta = nc.variables['zeta'][time]
+    
+    if ndim(zeta) == 2:
+        zeta = zeta[newaxis, :]
+    
     N = len(nc.dimensions['N']) + 1
     ti = zeta.shape[0]
     z = empty((ti, N) + h.shape, 'd')
     for n in arange(ti):
         for  k in arange(N):
-            z0=(sc_w[k]-Cs_w[k])*hc + Cs_w[k]*h;
-            z[n,k,:] = z0 + zeta[n,:]*(1.0 + z0/h);
+            z0=(sc_w[k]-Cs_w[k])*hc + Cs_w[k]*h
+            z[n,k,:] = z0 + zeta[n,:]*(1.0 + z0/h)
+    
     return(squeeze(z))
 
 def scoordr(h,hc,theta_b,theta_s,N):
@@ -221,6 +231,40 @@ def shrink(a,b):
         a = a.swapaxes(0,dim_idx)           # swap working dim back
     return a
 
+def zslice(z, q, qo, mode='spline'):
+    
+    if mode=='linear':
+        imode=0
+    elif mode=='spline':
+        imode=1
+    else:
+        imode=1
+        print mode, ' not supported, defaulting to splines'
+    
+    z = atleast_3d(z)
+    q = atleast_3d(q)
+    assert z.shape == q.shape, 'z and q must be the same shape'
+    
+    qo *= ones(q.shape[1:])
+    
+    q2d = _iso.zslice(z, q, qo, imode)
+    if any(q2d==1e20):
+        q2d = ma.masked_where(q2d==1e20, q2d)
+    
+    return q2d
+
+def iso_integrate(z_w, q, z_iso):
+    z_w = atleast_3d(z_w)
+    q = atleast_3d(q)
+    z_iso *= ones(q.shape[1:])
+    return _iso.integrate(z_w, q, z_iso)
+
+def surface(z, q, qo):
+    z = atleast_3d(z)
+    q = atleast_3d(q)
+    assert z.shape == q.shape, 'z and q must be the same size'
+    return _iso.surface(z, q, qo)
+
 def arg_nearest(x, xo, scale=None):
     """
     idx = arg_nearest(x, xo, scale=None)
@@ -239,69 +283,9 @@ def arg_nearest(x, xo, scale=None):
     q = reduce(add, [(y-yo)**2 for (y, yo) in zip(x, xo)])
     return where(q == q.min())
 
-
 if __name__ == '__main__':
-    '''Some simple tests'''
-    a = rand(5, 5)
-    print a
-    print '-='*40
-    print extrapolate(a)
-    print '-='*40
-    print extrapolate(a, bc='constant')
-    print '-='*40
-    print extrapolate(a, axis=1)
-    print '-='*40
-    print extrapolate(a, axis=1, bc='constant')
-
-if 0:
-    '''More tests...'''
-    a = arange(40.)
-    a = a.reshape(5,-1)
-    print ' ### original matrix'
-    print a
-    print ' ### interior points'
-    print shrink(a,(3,6))
-    print ' ### avg in first dim'
-    print shrink(a,(4, 8))
-    print ' ### avg in second dim'
-    print shrink(a,(5, 7))
-    
-    print '+-'*20, ' testing shapes'
-    print shrink(rand(10, 10, 10),(10,12,9)).shape == (10,10,9)
-    print shrink(rand(100),99).shape == (99,)
-    a, b = shrink(rand(10, 12, 15), rand(12, 10, 15))
-    print a.shape == (10,10,15), a.shape == b.shape
-    print '+-'*20, ' testing arrays'
-    a = rand(10,12,14)
-    a_test = 0.5*(a[1:,:]+a[:-1,:])
-    print all(a_test == shrink(a,a_test.shape))
-    a_test = a_test[:,1:-1,:]
-    print all(a_test == shrink(a,a_test.shape))
-    a_test = a_test[:,:,2:-2]
-    print all(a_test == shrink(a,a_test.shape))
-    print '+-'*20, ' testing 1D arrays'
-    a = rand(100)
-    b = rand(99)
-    ab = 0.5*(a[1:]+a[:-1])
-    aa, bb = shrink(a, b)
-    print all(aa == ab), aa.shape == bb.shape
-    aa = shrink(a, 99)
-    print all(aa == ab), aa.shape == bb.shape
-
-if 0:
-    '''Really, you'd think it would work by now...'''
-    import pylab as pl
-    z,y,x = mgrid[0:1:30j,0:1:100j,0:1:100j]
-    p = sqrt((x-0.5)**2 + (y-0.5)**2 + (z-1.0)**2)
-    # kind of cool
-    pz = isoslice(p,z,0.5)
-    # more cool (p does not have a value of 0.5 everywhere)
-    pp = isoslice(z,p,0.5)
-    fig = pl.figure(1, figsize=(8,4))
-    ax = fig.add_subplot(121)
-    ax.pcolor(x[1], y[1], pz, shading='flat')
-    ax=fig.add_subplot(122)
-    ax.pcolor(x[1], y[1], pp, shading='flat')
-    pl.show()
-
-    
+    z_w = random.rand(21, 30, 40).cumsum(axis=0)
+    z_w -= z_w[-1]
+    q = ones((20, 30, 40))
+    iq = iso_integrate(z_w, q, -3.2)
+    print iq

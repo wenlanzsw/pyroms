@@ -26,20 +26,27 @@ Topic :: Scientific/Engineering
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-from distutils.core import setup
+
+from numpy.distutils.core import Extension
+
+ext1 = Extension(name = '_iso',
+                 sources = ['pyroms/iso.f'])
 
 doclines = __doc__.split("\n")
 
-setup(name = "froms",
-      version = '0.1.0',
-      description = doclines[0],
-      long_description = "\n".join(doclines[2:]),
-      author = "Robert Hetland",
-      author_email = "hetland@tamu.edu",
-      url = "http://pong.tamu.edu/~rob/python",
-      download_url = "http://pong.tamu.edu/~rob/python/roms.tar.gz",
-      packages = ['pyroms'],
-      license = 'MIT',
-      platforms = ["any"],
-      classifiers = filter(None, classifiers.split("\n")),
-     )
+if __name__ == '__main__':
+    from numpy.distutils.core import setup
+    setup(name = "pyroms",
+          version = '0.7.0',
+          description = doclines[0],
+          long_description = "\n".join(doclines[2:]),
+          author = "Robert Hetland",
+          author_email = "hetland@tamu.edu",
+          url = "http://code.google.com/p/pyroms/",
+          packages = ['pyroms'],
+          license = 'MIT',
+          platforms = ["any"],
+          ext_modules = [ext1,],
+          classifiers = filter(None, classifiers.split("\n")),
+          )
+    
