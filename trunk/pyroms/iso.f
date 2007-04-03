@@ -1,15 +1,17 @@
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c SUBROUTINE INTEGRATE
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine integrate(z_w,q,z_iso,iq,L,M,N)
+      subroutine integrate(z_w,q,z_iso,iqu,iql,L,M,N)
       
       implicit none
       integer L, M, N
       real*8 z_w(N+1,M,L)
       real*8 z_iso(M,L)
       real*8 q(N,M,L)
-      real*8 iq(M,L)
-cf2py intent(out) iq
+      real*8 iqu(M,L)
+      real*8 iql(M,L)
+cf2py intent(out) iqu
+cf2py intent(out) iql
       integer i, j, k
       real*8 dz(N)
       real*8 dzp
@@ -19,13 +21,18 @@ cf2py intent(out) iq
           do k=1,N
             dz(k)=z_w(k+1,j,i)-z_w(k,j,i)
           enddo
-          iq(j,i)=0.0
+          iqu(j,i)=0.0
+          iql(j,i)=0.0
           do k=1,N
             if (z_w(k,j,i).gt.z_iso(j, i)) then
-              iq(j,i) = iq(j,i) + dz(k)*q(k,j,i)
+              iqu(j,i) = iqu(j,i) + dz(k)*q(k,j,i)
             else if (z_w(k+1,j,i).gt.(z_iso(j,i))) then
               dzp = z_w(k+1,j,i) - z_iso(j,i)
-              iq(j,i) = iq(j,i) + dzp*q(k,j,i)
+              iqu(j,i) = iqu(j,i) + dzp*q(k,j,i)
+              dzp = z_iso(j,i) - z_w(k,j,i)
+              iql(j,i) = iql(j,i) + dzp*q(k,j,i)
+            else
+              iql(j,i) = iql(j,i) + dz(k)*q(k,j,i)
             endif
           enddo
         enddo
@@ -45,7 +52,7 @@ c Assume q is sorted
       integer L, M, N
       real*8 z(N,M,L)
       real*8 q(N,M,L)
-      real*8 q0
+      real*8 q0(M,L)
       real*8 z_iso(M,L)
 cf2py intent(out) z_iso
       integer i, j, k
@@ -55,10 +62,11 @@ cf2py intent(out) z_iso
         do j=1,M
           z_iso(j,i)=1.0d20 ! default value - isoline not in profile
           do k=1,N-1
-            if(q(k,j,i).lt.q0.and.q(k+1,j,i).gt.q0) then
+            if ( (q(k,j,i).lt.q0(j,i).and.q(k+1,j,i).gt.q0(j,i)).or.
+     &           (q(k,j,i).gt.q0(j,i).and.q(k+1,j,i).lt.q0(j,i)) ) then
               dz = z(k+1,j,i) - z(k,j,i)
               dq = q(k+1,j,i) - q(k,j,i)
-              dq0 = q0 - q(k,j,i)
+              dq0 = q0(j,i) - q(k,j,i)
               z_iso(j,i) = z(k,j,i) + dz*dq0/dq
             endif
           enddo
