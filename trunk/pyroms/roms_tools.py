@@ -3,9 +3,10 @@ Tools for working with ROMS model input and output.
 """
 
 from numpy import *
-from pyroms import Dataset
+from pyroms import Dataset, Depths
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 import _iso
+import warnings
 
 gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
                     GreatCircle(6378137.0, 6356752.3142, \
@@ -33,6 +34,7 @@ def zatr(ncfile, time=None):
     
     ncfile - NetCDF file to use (a ROMS history file or netcdf object).
     """
+    warnings.warn('Deprecated -- use Depths class instead.')
     nc = Dataset(ncfile)
     h = nc.variables['h'][:]
     h = atleast_2d(h)
@@ -69,6 +71,7 @@ def zatw(ncfile, time=None):
     
     ncfile - NetCDF file to use (a ROMS history file or netcdf object).
     """
+    warnings.warn('Deprecated -- use Depths class instead.')
     nc = Dataset(ncfile)
     h = nc.variables['h'][:]
     hc = nc.variables['hc'][:]
@@ -106,6 +109,7 @@ def scoordr(h,hc,theta_b,theta_s,N):
      theta_s = strength of focusing parameter
      N number of vertical rho-points
     """
+    warnings.warn('Deprecated -- use Depths class instead.')
     sc_w = arange(-1, 1./N, 1./N, dtype='d')
     sc_r = 0.5*(sc_w[1:]+sc_w[:-1])
     Cs_r = (1-theta_b)*sinh(theta_s*sc_r)/sinh(theta_s)\
@@ -126,6 +130,7 @@ def scoordw(h,hc,theta_b,theta_s,N):
      theta_s = strength of focusing parameter
      N number of vertical w-points (one more than rho-points)
     """
+    warnings.warn('Deprecated -- use Depths class instead.')
     sc_w = arange(-1, 1./N, 1./N, dtype='d')
     Cs_w = (1-theta_b)*sinh(theta_s*sc_w)/sinh(theta_s)\
           +0.5*theta_b\
@@ -270,6 +275,12 @@ def surface(z, q, qo):
         return ma.masked_where(z_iso==1e20, z_iso)
     else:
         return z_iso
+
+def N2(rho, z, rho_0=1000.0):
+    '''return the stratification frequency, given rho and z
+    (both at rho points).'''
+    r_z = diff(rho, axis=0) / diff(z, axis=0)
+    return (9.8 / rho_0) * r_z
 
 def arg_nearest(x, xo, scale=None):
     """
