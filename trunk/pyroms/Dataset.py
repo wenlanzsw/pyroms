@@ -9,8 +9,11 @@ try:
     import MFnetCDF4_classic
     
     def Dataset(ncfile):
-        """Return an appropriate netcdf object given a file string, a list of files
-           (returns a multicdf instance), or a netcdf object (returns itself)."""
+        """Return an appropriate netcdf object:
+                netCDF4 object given a file string
+                MFnetCDF4_classic object given a list of files
+            
+            A netCDF4 or MFnetCDF4_classic object returns itself."""
         if isinstance(ncfile, str):
             return netCDF4.Dataset(ncfile, 'r')
         elif isinstance(ncfile, list) or isinstance(ncfile, tuple):
@@ -23,8 +26,8 @@ try:
             raise TypeError, 'type %s not supported' % type(ncfile)
 
     def MFDataset(ncfile):
-        """Return an MFnetCDF4_classic object given a string.  The string is expanded
-           with wildcards using glob."""
+        """Return an MFnetCDF4_classic object given a string or list.  A string is expanded
+           with wildcards using glob.  A netCDF4 or MFnetCDF4_classic object returns itself."""
         if isinstance(ncfile, str):
             return MFnetCDF4_classic.Dataset(ncfile)
         elif isinstance(ncfile, list) or isinstance(ncfile, tuple):

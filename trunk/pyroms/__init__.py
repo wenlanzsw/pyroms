@@ -1,18 +1,28 @@
 # PYROMS class
 # (c) Rob Hetland, 2005
 ''' 
-PYROMS
+PyROMS is a suite of tools for working with ROMS (the Regional Ocean Modeling System).
+
+Required modules:
+    NumPy, netcdf4-python
+
+Optional modules (mainly for the Grid class):
+    SciPy, matplotlib
+
+Copyright (C) 2007, Robert Hetland, released under a BSD-style license.
 '''
 
 from Dataset import Dataset, MFDataset
-from roms_time import roms_time
+from ocean_time import ocean_time
+from velocity import velocity
+
 from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, \
                        rot2d, zslice, iso_integrate, surface
-from velocity import velocity
+
+from ocean import rho_stp, o2_sat
 from polygeom import Polygeom
 from polyclick import PolyClick
 from grid import Grid, gridgen, nc_grid
-from ocean import rho_stp, o2_sat
 from depths import Depths, nc_depths
 
 __authors__ = ['Robert Hetland <hetland@tamu.edu>']
