@@ -10,7 +10,7 @@ Contains:
     + Grid - a class for holding horizontal and vertical ROMS grid information
     + nc_grid - make an instance of Grid based on a netcdf file
     + gridgen - create an instance of Grid using the gridgen program
- + roms_time - retrieve time information from a netcdf file
+ + ocean_time - retrieve time information from a netcdf file
  + roms_tools - functions for working with roms coordinates
 """
 

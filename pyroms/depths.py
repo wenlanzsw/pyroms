@@ -30,7 +30,6 @@ class Depths(object):
             self.zeta = zeta
         
         hdim = len(shape(h))
-        assert shape(zeta)[-hdim:] == shape(h), 'zeta dimensions must agree with h dimensions'
 
     def _get_sc(self):
         sc = linspace(-1.0, 0.0, self.N+1)

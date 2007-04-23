@@ -10,7 +10,7 @@ import netCDF4, datetime
 from pylab import date2num
 from pyroms import Dataset
 
-class roms_time (ndarray):
+class ocean_time (ndarray):
     
     def __new__(self, ncfile, name='ocean_time', units=None, **kwargs):
         self._nc = Dataset(ncfile)
@@ -23,7 +23,7 @@ class roms_time (ndarray):
         self.origin = self._utime.origin
         self.dates = self._utime.num2date(romstime)
         
-        return romstime.view(roms_time)
+        return romstime.view(ocean_time)
     
     def nearest_index(self, dateo):
         to = self._utime.date2num(dateo)
