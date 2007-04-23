@@ -3,7 +3,8 @@ Tools for working with ROMS model input and output.
 """
 
 from numpy import *
-from pyroms import Dataset, Depths
+from pyroms.Dataset import Dataset
+from pyroms.depths import Depths
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 import _iso
 import warnings

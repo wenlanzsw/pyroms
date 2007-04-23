@@ -12,10 +12,16 @@ import os
 import warnings
 import pyroms
 from datetime import datetime, timedelta
-from matplotlib.toolkits.basemap import Basemap
-from matplotlib.toolkits.basemap.greatcircle import GreatCircle
-from scipy.sandbox import delaunay
+try:
+    from matplotlib.toolkits.basemap import Basemap
+    from matplotlib.toolkits.basemap.greatcircle import GreatCircle
+except:
+    pass
 
+try:
+    from scipy.sandbox import delaunay
+except:
+    pass
 
 def extrapolate_mask(a, mask=None):
     if mask is None and not isinstance(a, ma.MaskedArray): 
