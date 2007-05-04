@@ -12,8 +12,9 @@ from numpy import *
 
 class velocity (object):
     
-    def __init__(self, nc):
+    def __init__(self, nc, grid='psi'):
         self.nc = pyroms.Dataset(nc)
+        self.grid = grid
         self.u = self.nc.variables['u']
         self.v = self.nc.variables['v']
         try:
@@ -27,10 +28,22 @@ class velocity (object):
         u, v = pyroms.shrink(u, v)
         if self.ang is not None:
             ang = pyroms.shrink(self.ang, u.shape)
-            return pyroms.rot2d(u, v, ang)
+            u, v = pyroms.rot2d(u, v, ang)
+        
+        if self.grid=='rho':
+            shp = list(u.shape)
+            shp[-1] -= 1
+            shp[-2] -= 1
+            shpr = list(u.shape)
+            shpr[-1] += 1
+            shpr[-2] += 1
+            ur = zeros(shpr)
+            vr = zeros(shpr)
+            ur[...,1:-1,1:-1] = pyroms.shrink(u, shp)
+            vr[...,1:-1,1:-1] = pyroms.shrink(v, shp)
+            return ur, vr
         else:
             return u, v
-
 
 
 if __name__ == '__main__':
