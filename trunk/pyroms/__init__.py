@@ -17,7 +17,8 @@ from ocean_time import ocean_time
 from velocity import velocity
 
 from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, \
-                       rot2d, zslice, iso_integrate, surface, N2
+                       rot2d, zslice, iso_integrate, surface, N2, nc_N2, \
+                       nc_gls_dissipation
 
 from ocean import rho_stp, o2_sat
 from polygeom import Polygeom

@@ -4,7 +4,8 @@ Tools for working with ROMS model input and output.
 
 from numpy import *
 from pyroms.Dataset import Dataset
-from pyroms.depths import Depths
+from pyroms.depths import nc_depths
+from pyroms.grid import nc_grid
 from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 import _iso
 import warnings
@@ -301,9 +302,65 @@ def arg_nearest(x, xo, scale=None):
     q = reduce(add, [(y-yo)**2 for (y, yo) in zip(x, xo)])
     return where(q == q.min())
 
-if __name__ == '__main__':
-    z_w = random.rand(21, 30, 40).cumsum(axis=0)
-    z_w -= z_w[-1]
-    q = ones((20, 30, 40))
-    iq = iso_integrate(z_w, q, -3.2)
-    print iq
+def nc_gls_dissipation(nc, tidx):
+    '''Return the dissipation, based on tke, gls and the gls scheme parameters 
+       cmu0, m, n, and p.  Usage:
+       
+       eps = nc_gls_dissipation(nc, tidx)
+       
+       where nc is a netcdf object or filename, tidx is the time index to return
+    '''
+    nc = Dataset(nc)
+    cmu0 = nc.variables['gls_cmu0'][:]
+    gls_m = nc.variables['gls_m'][:]
+    gls_n = nc.variables['gls_n'][:]
+    gls_p = nc.variables['gls_p'][:]
+    
+    tke = nc.variables['tke'][tidx]
+    gls = nc.variables['gls'][tidx]
+    
+    return cmu0**(3.0+gls_p/gls_n) * tke**(3.0/2.0+gls_m/gls_n) * gls**(-1.0/gls_n)
+
+def nc_N2(nc, tidx):
+    '''Return N2 (buoyancy frequency squared).  Usage:
+       
+       N2 = nc_N2(nc, tidx)
+       
+       where nc is a netcdf object or filename, tidx is the time index to return
+    '''
+    nc = Dataset(nc)
+    rho = nc.variables['rho'][tidx]
+    zr = nc_depths(nc, grid='rho')[tidx]
+    return - 9.8 * (diff(rho, axis=0)/diff(zr, axis=0)) / 1000.0
+
+def nc_curl(nc, tidx, grd=None):
+    if grd is None:
+        grd = nc_grid(nc)
+    nc = Dataset(nc)
+    u = nc.variables['u'][tidx]
+    v = nc.variables['v'][tidx]
+    return ( diff(v, axis=-1)/diff(grd.x_v, axis=-1) - \
+             diff(u, axis=-2)/diff(grd.y_u, axis=-2) )
+
+def nc_div(nc, tidx, grd=None):
+    if grd is None:
+        grd = nc_grid(nc)
+    nc = Dataset(nc)
+    u = nc.variables['u'][tidx]
+    v = nc.variables['v'][tidx]
+    return ( (diff(u, axis=-1)/diff(grd.x_u, axis=-1))[...,1:-1,:] + \
+             (diff(v, axis=-2)/diff(grd.y_v, axis=-2))[...,:,1:-1] )
+
+def nc_pstrain(nc, tidx, grd=None):
+    if grd is None:
+        grd = nc_grid(nc)
+    nc = Dataset(nc)
+    u = nc.variables['u'][tidx]
+    v = nc.variables['v'][tidx]
+    ex = (diff(u, axis=-1)/diff(grd.x_u, axis=-1))[...,1:-1,:]
+    ey = (diff(v, axis=-2)/diff(grd.y_v, axis=-2))[...,:,1:-1]
+    gamma = shrink ( diff(u, axis=-2)/diff(grd.y_u, axis=-2) + \
+                     diff(v, axis=-1)/diff(grd.x_v, axis=-1)  , ex.shape)
+    return 0.5*(ex + ey) + sqrt( (0.5*(ex - ey))**2 + (0.5*gamma)**2 ), \
+           0.5*(ex + ey) - sqrt( (0.5*(ex - ey))**2 + (0.5*gamma)**2 )
+
