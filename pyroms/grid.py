@@ -7,7 +7,7 @@ grid.py
 
 from numpy import *
 import pylab as pl
-import netCDF4_classic as netcdf
+import netCDF4
 import os
 import warnings
 import pyroms
@@ -382,7 +382,7 @@ class Grid(object):
         el = self.y_rho[self.mask_rho==1.0].ptp()
         
         # Write ROMS grid to file
-        nc = netcdf.Dataset(filename, 'w', format='NETCDF3_CLASSIC')
+        nc = netCDF4.Dataset(filename, 'w', format='NETCDF3_CLASSIC')
         nc.Description = 'ROMS grid'
         nc.Author = 'pyroms.gridgen'
         nc.Created = datetime.now().isoformat()

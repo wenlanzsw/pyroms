@@ -47,18 +47,18 @@ class Depths(object):
     Cs = property(_get_Cs)
     
     def __getitem__(self, key):
-        if isinstance(key, tuple) and len(shape(self.zeta))>len(shape(self.h)):
+        if isinstance(key, tuple) and len(self.zeta.shape) > len(self.h.shape):
             zeta = self.zeta[key[0]]
             res_index = (slice(None),) + key[1:]
             print res_index
-        elif len(shape(self.zeta))>len(shape(self.h)): 
+        elif len(self.zeta.shape) > len(self.h.shape):
             zeta = self.zeta[key]
             res_index = slice(None)
         else:
             zeta = self.zeta
             res_index = key
         
-        if ndim(self.h) == ndim(zeta):       # Assure a time-dimension exists
+        if len(self.h.shape) == len(zeta.shape):       # Assure a time-dimension exists
             zeta = zeta[newaxis, :]
         
         ti = zeta.shape[0]

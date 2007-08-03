@@ -14,11 +14,11 @@ Copyright (C) 2007, Robert Hetland, released under a BSD-style license.
 
 from Dataset import Dataset, MFDataset
 from ocean_time import ocean_time
-from velocity import velocity
+from velocity import nc_velocity
 
 from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, \
                        rot2d, zslice, iso_integrate, surface, N2, nc_N2, \
-                       nc_gls_dissipation, nc_curl, nc_div, nc_pstrain
+                       nc_gls_dissipation, nc_curl, nc_div, nc_pstrain, transect
 
 from ocean import rho_stp, o2_sat
 from polygeom import Polygeom
