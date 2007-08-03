@@ -10,6 +10,11 @@ from matplotlib.toolkits.basemap.greatcircle import GreatCircle
 import _iso
 import warnings
 
+try:
+    from scipy.sandbox import delaunay
+except:
+    pass
+
 gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
                     GreatCircle(6378137.0, 6356752.3142, \
                                 lon1, lat1, lon2, lat2).distance, \
@@ -269,14 +274,37 @@ def iso_integrate(z_w, q, z_iso):
     return _iso.integrate(z_w, q, z_iso)
 
 def surface(z, q, qo):
-    z = atleast_3d(z)
-    q = atleast_3d(q)
+    assert len(z.shape) == 3, 'z must be 3D'
+    assert len(q.shape) == 3, 'q must be 3D'
     assert z.shape == q.shape, 'z and q must be the same size'
+    qo = qo * ones(q.shape[1:])
     z_iso = _iso.surface(z, q, qo)
     if any(z_iso==1e20):
         return ma.masked_where(z_iso==1e20, z_iso)
     else:
         return z_iso
+
+def transect(x, y, xi, yi, prop):
+    '''propi = transect(x, y, xi, yi, prop)
+    
+       Interpolates property prop on a horizontal grid x, y to a
+       transect given by the points in arrays xi, yi.  prop may be
+       two- or more dimensional, but the two rightmost dimensions must
+       match those of x and y (which must both be two dimensional).  The
+       grid x, y may be given as a masked array.'''
+    if ma.isMaskedArray(x) and ma.isMaskedArray(y):
+        mask = ~x.mask & ~y.mask
+    else:
+        mask = ones(x.shape, dtype='bool')
+    x = x[mask]
+    y = y[mask]
+    tri = delaunay.Triangulation(x, y)
+    if prop.ndim == 2:
+        return tri.nn_interpolator(prop[mask])(xi, yi)
+    propi = empty(prop.shape[:-2]+(len(xi),), 'd')
+    for idx in zip(*indices(prop.shape[:-2])):
+        propi[idx, :] = tri.nn_interpolator(prop[idx, mask].flat)(xi, yi)
+    return propi
 
 def N2(rho, z, rho_0=1000.0):
     '''return the stratification frequency, given rho and z
