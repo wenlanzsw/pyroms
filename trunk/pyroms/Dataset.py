@@ -6,7 +6,10 @@
 try:
     import netCDF4
     import netCDF4
-    import MFnetCDF4
+    try:
+        import MFnetCDF4
+    except:
+        import MFnetCDF4_classic as MFnetCDF4
     
     def Dataset(ncfile):
         """Return an appropriate netcdf object:

@@ -352,17 +352,23 @@ def nc_gls_dissipation(nc, tidx):
     
     return cmu0**(3.0+gls_p/gls_n) * tke**(3.0/2.0+gls_m/gls_n) * gls**(-1.0/gls_n)
 
-def nc_N2(nc, tidx):
+class nc_N2(object):
     '''Return N2 (buoyancy frequency squared).  Usage:
        
        N2 = nc_N2(nc, tidx)
        
        where nc is a netcdf object or filename, tidx is the time index to return
     '''
-    nc = Dataset(nc)
-    rho = nc.variables['rho'][tidx]
-    zr = nc_depths(nc, grid='rho')[tidx]
-    return - 9.8 * (diff(rho, axis=0)/diff(zr, axis=0)) / 1000.0
+    def __init__(self, nc):
+        self.nc = Dataset(nc)
+        if 'rho' in nc.variables.keys():
+            self.rho = nc.variables['rho']
+        else:
+            raise ValueError, "Variable 'rho' not in netcdf file."
+        self.zr = nc_depths(nc, grid='rho')
+    
+    def __getitem__(self, elem):
+        return N2(self.rho[elem], self.zr[elem])
 
 def nc_curl(nc, tidx, grd=None):
     if grd is None:
