@@ -1,19 +1,22 @@
-"""
-Tools for working with ROMS model input and output.
-"""
+"""Tools for working with ROMS model input and output."""
 
 from numpy import *
+import warnings
+
 from pyroms.Dataset import Dataset
 from pyroms.depths import nc_depths
 from pyroms.grid import nc_grid
-from matplotlib.toolkits.basemap.greatcircle import GreatCircle
-import _iso
-import warnings
 
+try:
+    from matplotlib.toolkits.basemap.greatcircle import GreatCircle
+except:
+    pass
 try:
     from scipy.sandbox import delaunay
 except:
     pass
+
+import _iso
 
 gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
                     GreatCircle(6378137.0, 6356752.3142, \
