@@ -50,7 +50,6 @@ class Depths(object):
         if isinstance(key, tuple) and len(self.zeta.shape) > len(self.h.shape):
             zeta = self.zeta[key[0]]
             res_index = (slice(None),) + key[1:]
-            print res_index
         elif len(self.zeta.shape) > len(self.h.shape):
             zeta = self.zeta[key]
             res_index = slice(None)
