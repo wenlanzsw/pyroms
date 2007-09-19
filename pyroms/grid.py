@@ -239,7 +239,7 @@ class Grid(object):
         'Calculates pm, pn, dndx, dmde, and angle from x_vert and y_vert'
         if self.geographic:
             gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
-                      pyroms.greatcircle.GreatCircle(6378137.0, 6356752.3142, \
+                      pyroms.GreatCircle(6378137.0, 6356752.3142, \
                                           lon1, lat1, lon2, lat2).distance)
             lon_temp = 0.5*(self.lon_vert[1:,:]+self.lon_vert[:-1,:])
             lat_temp = 0.5*(self.lat_vert[1:,:]+self.lat_vert[:-1,:])
