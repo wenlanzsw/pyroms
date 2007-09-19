@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
-"""
-grid.py
-"""
+"grid.py"
 
 from numpy import *
 import pylab as pl
@@ -634,7 +629,7 @@ def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \
     
     # Read in grid file
     if windows == False:
-        xp, yp = pl.load(gridname, comments="#", unpack=True)
+        xp, yp = pl.load(gridname).T
     else:
         x=[]; y=[]
         gridfile = open(gridname)
