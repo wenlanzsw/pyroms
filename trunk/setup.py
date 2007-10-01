@@ -34,6 +34,14 @@ ext1 = Extension(name = '_iso',
 
 doclines = __doc__.split("\n")
 
+gshhs_datafiles = ['gshhs-data/gshhs_c.b', 
+                   'gshhs-data/gshhs_l.b',
+                   'gshhs-data/gshhs_i.b',
+                   'gshhs-data/gshhs_h.b',
+                   'gshhs-data/gshhs_f.b']
+
+package_data = {'pyroms': gshhs_datafiles}
+
 if __name__ == '__main__':
     from numpy.distutils.core import setup
     setup(name = "pyroms",
@@ -48,5 +56,6 @@ if __name__ == '__main__':
           platforms = ["any"],
           ext_modules = [ext1,],
           classifiers = filter(None, classifiers.split("\n")),
+          package_data = package_data,
           )
     
