@@ -31,10 +31,10 @@ class BoundaryInteractor:
       'i' insert a vertex at point.  You must be within epsilon of the
           line connecting two existing vertices
 
-      'p' mark a location as a positive (counterclockwise) corner
+      'p' plus -- mark a location as a positive (counterclockwise) corner
       
-      'm' mark a location as a negative (clockwise) corner
-
+      'm' minus -- mark a location as a negative (clockwise) corner
+      
     """
 
     showverts = True
@@ -45,7 +45,7 @@ class BoundaryInteractor:
         if poly.figure is None:
             raise RuntimeError('You must first add the polygon to a figure or canvas before defining the interactor')
         self.ax = ax
-        canvas = poly.figure.canvas
+        self.canvas = poly.figure.canvas
         self.poly = poly
 
         x, y = asarray(zip(*self.poly.xy))
@@ -73,12 +73,11 @@ class BoundaryInteractor:
         cid = self.poly.add_callback(self.poly_changed)
         self._ind = None # the active vert
 
-        canvas.mpl_connect('draw_event', self.draw_callback)
-        canvas.mpl_connect('button_press_event', self.button_press_callback)
-        canvas.mpl_connect('key_press_event', self.key_press_callback)
-        canvas.mpl_connect('button_release_event', self.button_release_callback)
-        canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
-        self.canvas = canvas
+        self.canvas.mpl_connect('draw_event', self.draw_callback)
+        self.canvas.mpl_connect('button_press_event', self.button_press_callback)
+        self.canvas.mpl_connect('key_press_event', self.key_press_callback)
+        self.canvas.mpl_connect('button_release_event', self.button_release_callback)
+        self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
 
 
     def draw_callback(self, event):
@@ -176,7 +175,7 @@ class BoundaryInteractor:
                 if any(self.beta==-1):
                     self.mline.set_data(x[self.beta==-1.0], y[self.beta==-1.0])
                 else:
-                    self.pline.set_mata([], [])
+                    self.pline.set_data([], [])
                 if any(self.beta==1.0):
                     self.ax.draw_artist(self.pline)
                 if any(self.beta==-1.0):
@@ -235,23 +234,26 @@ class PolyClick(object):
     Data are always available in p.x, p.y, and p.verts attributes.
     """
     
+    def _boundary_interactor(self):
+        """Send polyclick thread to boundary interactor"""
+        # Get rid of line, and old mpl connections.
+        self._line.set_visible(False)
+        self._ax.figure.canvas.mpl_disconnect(self._key_id)
+        self._ax.figure.canvas.mpl_disconnect(self._click_id)
+    
+        # start a polygon intteractor
+        verts = zip(self._xdata, self._ydata)
+        poly = Polygon(verts, alpha=0.2, fc='k', animated=True)
+        self._ax.add_patch(poly)
+        self._pi = BoundaryInteractor(self._ax, poly)
+        # self._ax.add_line(self._pi.line)
+        self.get_xdata = self._pi.line.get_xdata
+        self.get_ydata = self._pi.line.get_ydata
+        self.beta = self._pi.beta
     
     def _on_key(self, event):
         if event.key is 'enter':
-            # Get rid of line, and old mpl connections.
-            self._line.set_visible(False)
-            self._ax.figure.canvas.mpl_disconnect(self._key_id)
-            self._ax.figure.canvas.mpl_disconnect(self._click_id)
-            
-            # start a polygon intteractor
-            verts = zip(self._xdata, self._ydata)
-            poly = Polygon(verts, alpha=0.2, fc='k', animated=True)
-            self._ax.add_patch(poly)
-            self._pi = BoundaryInteractor(self._ax, poly)
-            # self._ax.add_line(self._pi.line)
-            self.get_xdata = self._pi.line.get_xdata
-            self.get_ydata = self._pi.line.get_ydata
-            self.beta = self._pi.beta
+            self._boundary_interactor()
     
     def _on_click(self, event):
         self._xdata.append(event.xdata)
@@ -271,6 +273,8 @@ class PolyClick(object):
         
         self._key_id = self._ax.figure.canvas.mpl_connect('key_press_event', self._on_key)
         self._click_id = self._ax.figure.canvas.mpl_connect('button_press_event', self._on_click)
+        if len(xdata) > 0 and len(ydata) > 0:
+            self._boundary_interactor()
     
     def get_xdata(self):
         if self._pi is None:
