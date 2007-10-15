@@ -4,10 +4,9 @@ import struct
 from numpy import *
 import pylab as pl
 import os
+from matplotlib.ticker import FuncFormatter
 
-gshhs_datadir = os.sep.join([os.path.dirname(__file__), 'gshhs-data'])
-
-def deg2str(deg, dir='E', fmt="%3.1f", usetex=False):
+def deg2str(deg, dir='E', fmt="%3.1f"):
     min = 60 * (deg - floor(deg))
     deg = floor(deg)
     if deg < 0:
@@ -18,10 +17,7 @@ def deg2str(deg, dir='E', fmt="%3.1f", usetex=False):
             dir='W'
         if dir=='N':
             dir='S'
-    if (rcParams['text.usetex'] == True) and (usetex is True):
-        return (r"%d$^\circ$" + fmt + "' %s") % (abs(deg), abs(min), dir)
-    else:
-        return (u"%d\N{DEGREE SIGN}" + fmt + "' %s") % (abs(deg), abs(min), dir)
+    return (u"%d\N{DEGREE SIGN}" + fmt + "' %s") % (abs(deg), abs(min), dir)
 
 
 class gshhs(object):
@@ -69,6 +65,8 @@ class gshhs(object):
         plot polygons in a new figure (or in axis=ax if ax is not None).  Other
         inputs determine the colors of land, water, and the coastlines.
     """
+    
+    gshhs_datadir = os.sep.join([os.path.dirname(__file__), 'gshhs-data'])
     
     def _get_header(self):
         nb_i = struct.calcsize('i') # 4 bytes in 'int'
@@ -164,9 +162,10 @@ class gshhs(object):
             self._ll_lon = self.ll_lon
         
         filename = 'gshhs_' + resolution + '.b'
-        gshhs_file = os.sep.join([gshhs_datadir, filename])
+        gshhs_file = os.sep.join([self.gshhs_datadir, filename])
         
         self.aspect = 1.0/float(cos(0.5*(self.ll_lat+self.ur_lat)*pi/180.))
+        print gshhs_file
         self.f = open(gshhs_file, 'rb')
         self.lon=[]; self.lat=[];
         self.area=[]; self.level=[]; self.grenwich=[]
@@ -201,34 +200,41 @@ class gshhs(object):
                 ax.fill(lon, lat, ec=edge_color, fc=water_color)
         pl.axis(self.window)
         ax.set_aspect(self.aspect, adjustable='box', anchor='C')
-        xlab = []
-        for xtick in ax.get_xticks():
-            xlab.append(deg2str(xtick))
-        ax.set_xticklabels(xlab)
-        ylab = []
-        for ytick in ax.get_yticks():
-            ylab.append(deg2str(ytick))
-        ax.set_yticklabels(ylab)
-        ax.fmt_xdata = lambda x: deg2str(x, 'E', fmt="%5.3f", usetex=False)
-        ax.fmt_ydata = lambda y: deg2str(y, 'N', fmt="%5.3f", usetex=False)
-        
+        def xformat(x, pos=None): return deg2str(x, 'E', fmt="%2.0f")
+        xformatter = FuncFormatter(xformat)
+        ax.xaxis.set_major_formatter(xformatter)
+        def yformat(y, pos=None): return deg2str(y, 'N', fmt="%2.0f")
+        yformatter = FuncFormatter(yformat)
+        ax.yaxis.set_major_formatter(yformatter)
+        ax.fmt_xdata = lambda x: deg2str(x, 'E', fmt="%5.3f")
+        ax.fmt_ydata = lambda y: deg2str(y, 'N', fmt="%5.3f")
+    
+    def get_lcc_proj(self, **kwargs):
+        """return Basemap lcc projection based on window"""
+        pass
+    
+    def get_merc_proj(self, **kwargs):
+        """return Basemap mercator projection based on window"""
+        pass
 
 if __name__ == '__main__':
     from pylab import *
     import time
-    window = [12, 15.5, 53.25, 55]
-    # window = [-10, -5, 50, 60]
-    # window = [-10, 10, 40, 60]
-    # window = [-95., -87., 28., 31.0]
-    t1 = time.clock()
-    m = gshhs(window=window,resolution='f',area_thresh=0., max_level=1)
-    t2 = time.clock()
-    print 'gshhs time: ' + str(t2-t1) + ' seconds'
-    m.plot()
-    t3 = time.clock()
-    print 'plot time: ' + str(t3-t2) + ' seconds'
+    windows = ([12, 15.5, 53.25, 55],
+              [-10, -5, 50, 60],
+              [-10, 10, 40, 60],
+              [-95., -87., 28., 31.0])
+    for window in windows:
+        print 'window = ', window
+        t1 = time.clock()
+        m = gshhs(window=window, resolution='i', area_thresh=0., max_level=1)
+        t2 = time.clock()
+        print 'gshhs time: ' + str(t2-t1) + ' seconds'
+        m.plot()
+        t3 = time.clock()
+        print 'plot time: ' + str(t3-t2) + ' seconds'
+        t4 = time.clock()
+        print 'show time: ' + str(t4-t3) + ' seconds'
+        draw()
+        print 'Total time: ' + str(t4-t1) + ' seconds'
     show()
-    t4 = time.clock()
-    print 'show time: ' + str(t4-t3) + ' seconds'
-
-    print 'Total time: ' + str(t4-t1) + ' seconds'
