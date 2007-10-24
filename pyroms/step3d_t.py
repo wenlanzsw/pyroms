@@ -13,6 +13,8 @@ import pylab as pl
 import pyroms
 from scipy.interpolate import interp1d
 
+import _step3d_t
+
 class Step3d_t(object):
     """docstring for Step3d_t"""
     def __init__(self, nc, grd=None):
@@ -45,7 +47,7 @@ class Step3d_t(object):
         for ittr, time in enumerate(linspace(tstart, tend, N)):
             w0 = (tend-time)/(tend-tstart)
             w1 = 1.0 - w0
-            self.trc = pyroms._step3d_t.step3d_t(dt, 
+            self.trc = _step3d_t.step3d_t(dt, 
                               self.rmask.T, self.pm.T, self.pn.T, 
                               (w0*z_wi[0] + w1*z_wi[1]).T,
                               (w0*AKti[0] + w1*AKti[1]).T,
@@ -63,7 +65,8 @@ class Step3d_t(object):
         AKt = self.nc.variables['AKt'][tidx]
         
         for ittr, time in enumerate(linspace(self.dt, self.dt*N, N)):
-            self.trc = step3d_t(self.dt, self.rmask.T, self.pm.T, self.pn.T, 
+            self.trc = _step3d_t.step3d_t(self.dt,
+                              self.rmask.T, self.pm.T, self.pn.T, 
                               z_w.T, AKt.T, u.T, v.T, self.trc.T).T
             print '[%d/%d] %9.4f' % (ittr, N, time)
 

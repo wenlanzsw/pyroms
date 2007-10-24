@@ -57,7 +57,7 @@ if __name__ == '__main__':
           packages = ['pyroms'],
           license = 'MIT',
           platforms = ["any"],
-          ext_modules = [iso,],
+          ext_modules = [iso, step3d_t],
           classifiers = filter(None, classifiers.split("\n")),
           package_data = package_data,
           )
