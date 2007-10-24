@@ -33,7 +33,7 @@ iso = Extension(name = '_iso',
                 sources = ['pyroms/iso.f'])
 
 step3d_t = Extension(name = '_step3d_t',
-                     sources = ['pyroms/step3d_t.f90'])
+                     sources = ['pyroms/step3d_t.f'])
 
 doclines = __doc__.split("\n")
 
