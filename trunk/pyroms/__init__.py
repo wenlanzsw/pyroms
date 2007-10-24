@@ -27,6 +27,7 @@ from grid import Grid, gridgen, nc_grid
 from depths import Depths, nc_depths
 from greatcircle import GreatCircle
 from gshhs import gshhs
+from step3d_t import step3d_t
 
 __authors__ = ['Robert Hetland <hetland@tamu.edu>']
 __version__ = '0.4.5'

@@ -313,7 +313,7 @@ def N2(rho, z, rho_0=1000.0):
     '''return the stratification frequency, given rho and z
     (both at rho points).'''
     r_z = diff(rho, axis=0) / diff(z, axis=0)
-    return (9.8 / rho_0) * r_z
+    return -(9.8 / rho_0) * r_z
 
 def arg_nearest(x, xo, scale=None):
     """
