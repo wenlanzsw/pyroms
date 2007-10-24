@@ -29,8 +29,11 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 from numpy.distutils.core import Extension
 
-ext1 = Extension(name = '_iso',
-                 sources = ['pyroms/iso.f'])
+iso = Extension(name = '_iso',
+                sources = ['pyroms/iso.f'])
+
+step3d_t = Extension(name = '_step3d_t',
+                     sources = ['pyroms/step3d_t.f90'])
 
 doclines = __doc__.split("\n")
 
@@ -54,7 +57,7 @@ if __name__ == '__main__':
           packages = ['pyroms'],
           license = 'MIT',
           platforms = ["any"],
-          ext_modules = [ext1,],
+          ext_modules = [iso,],
           classifiers = filter(None, classifiers.split("\n")),
           package_data = package_data,
           )
