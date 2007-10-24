@@ -30,7 +30,7 @@ class Step3d_t(object):
         self.t = pyroms.ocean_time(nc)
         self.z_w = pyroms.nc_depths(nc, grid='w')
     
-    def dyn_step(self, tidx):
+    def dyn_step(self, tidx, AKt_bak=1e-5):
         """docstring for fname"""
         tidx=slice(tidx,tidx+2)
         tstart = self.t[tidx][0]
@@ -39,7 +39,10 @@ class Step3d_t(object):
         z_wi = self.z_w[tidx]
         ui = self.nc.variables['u'][tidx]
         vi = self.nc.variables['v'][tidx]
-        AKti = self.nc.variables['AKt'][tidx]
+        try:
+            AKti = self.nc.variables['AKt'][tidx]
+        except:
+            AKti = zeros_like(z_wi) + AKt_bak
         
         N = ceil((tend-tstart)/self.dt)
         dt = (tend-tstart)/N
@@ -56,13 +59,16 @@ class Step3d_t(object):
                               self.trc.T).T
             print '[%d/%d] %9.4f' % (ittr, N, time)
         
-    def static_step(self, tidx, N):
+    def static_step(self, tidx, N, AKt_bak=1e-5):
         """docstring for fname"""
         
         z_w = self.z_w[tidx]
         u = self.nc.variables['u'][tidx]
         v = self.nc.variables['v'][tidx]
-        AKt = self.nc.variables['AKt'][tidx]
+        try:
+            AKt = self.nc.variables['AKt'][tidx]
+        except:
+            AKt = zeros_like(z_w) + AKt_bak
         
         for ittr, time in enumerate(linspace(self.dt, self.dt*N, N)):
             self.trc = _step3d_t.step3d_t(self.dt,
