@@ -17,7 +17,7 @@ import _step3d_t
 
 class Step3d_t(object):
     """docstring for Step3d_t"""
-    def __init__(self, nc, grd=None):
+    def __init__(self, nc, grd=None, AKt_bak=1e-5):
         self.nc = pyroms.Dataset(nc)
         self.dt = nc.variables['dt'][:]
         if grd is None:
@@ -27,56 +27,51 @@ class Step3d_t(object):
         self.rmask = self.grd.mask
         self.pm = self.grd.pm
         self.pn = self.grd.pn
-        self.t = pyroms.ocean_time(nc)
+        self._ocean_time = pyroms.ocean_time(nc)
         self.z_w = pyroms.nc_depths(nc, grid='w')
+        self.time = self._ocean_time[0]
+        self._lidx = -999
+        if 'AKt' not in nc.variables:
+            print ' ### Warning -- AKt not found, using AKt_bak = %5.3e' % AKt_bak
+            self._AKt_bak = AKt_bak
     
-    def dyn_step(self, tidx, AKt_bak=1e-5):
-        """docstring for fname"""
-        tidx=slice(tidx,tidx+2)
-        tstart = self.t[tidx][0]
-        tend = self.t[tidx][-1]
-        
-        z_wi = self.z_w[tidx]
-        ui = self.nc.variables['u'][tidx]
-        vi = self.nc.variables['v'][tidx]
-        try:
-            AKti = self.nc.variables['AKt'][tidx]
-        except:
-            AKti = zeros_like(z_wi) + AKt_bak
-        
-        N = ceil((tend-tstart)/self.dt)
-        dt = (tend-tstart)/N
-        
-        for ittr, time in enumerate(linspace(tstart, tend, N)):
-            w0 = (tend-time)/(tend-tstart)
-            w1 = 1.0 - w0
-            self.trc = _step3d_t.step3d_t(dt, 
-                              self.rmask.T, self.pm.T, self.pn.T, 
-                              (w0*z_wi[0] + w1*z_wi[1]).T,
-                              (w0*AKti[0] + w1*AKti[1]).T,
-                              (w0*ui[0] + w1*ui[1]).T,
-                              (w0*vi[0] + w1*vi[1]).T,
-                              self.trc.T).T
-            print '[%d/%d] %9.4f' % (ittr, N, time)
-        
-    def static_step(self, tidx, N, AKt_bak=1e-5):
+    def step(self, static=False):
         """docstring for fname"""
         
-        z_w = self.z_w[tidx]
-        u = self.nc.variables['u'][tidx]
-        v = self.nc.variables['v'][tidx]
-        try:
-            AKt = self.nc.variables['AKt'][tidx]
-        except:
-            AKt = zeros_like(z_w) + AKt_bak
+        lidx = argwhere(abs(self._ocean_time <= self.time)).max()
+        if lidx != self._lidx:
+            self._lidx = lidx
+            self._uidx = lidx+2
+            if self._uidx >= len(self._ocean_time): self._uidx = None
+            
+            self._tidx=slice(self._lidx,self._uidx)
+            self._tstart = self._ocean_time[self._tidx][0]
+            self._tend = self._ocean_time[self._tidx][-1]
+            
+            self._z_wi = self.z_w[self._tidx]
+            self._ui = self.nc.variables['u'][self._tidx]
+            self._vi = self.nc.variables['v'][self._tidx]
+            try:
+                self._AKti = self.nc.variables['AKt'][self._tidx]
+            except:
+                self._AKti = zeros_like(self._z_wi) + self._AKt_bak
         
-        for ittr, time in enumerate(linspace(self.dt, self.dt*N, N)):
-            self.trc = _step3d_t.step3d_t(self.dt,
-                              self.rmask.T, self.pm.T, self.pn.T, 
-                              z_w.T, AKt.T, u.T, v.T, self.trc.T).T
-            print '[%d/%d] %9.4f' % (ittr, N, time)
-
-
+        w0 = (self._tend-self.time)/(self._tend-self._tstart)
+        w1 = 1.0 - w0
+        self.trc = _step3d_t.step3d_t(self.dt, 
+                          self.rmask.T, self.pm.T, self.pn.T, 
+                          (w0*self._z_wi[0] + w1*self._z_wi[1]).T,
+                          (w0*self._AKti[0] + w1*self._AKti[1]).T,
+                          (w0*self._ui[0] + w1*self._ui[1]).T,
+                          (w0*self._vi[0] + w1*self._vi[1]).T,
+                          self.trc.T).T
+        
+        print 'time=%9.2f, mean=%7.3e, min=%7.3e, max=%7.3e' % \
+              (self.time, self.trc.mean(), self.trc.min(), self.trc.max())
+        
+        if static is False:
+            self.time = self.time + self.dt
+        
 if __name__ == '__main__':
     nc = pyroms.MFDataset('/Volumes/Hetland_merrimack/field_2007/steady/ocean_1750*.nc')
     step = Step3d_t(nc)

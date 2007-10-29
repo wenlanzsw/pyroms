@@ -222,12 +222,12 @@ if __name__ == '__main__':
     import time
     windows = ([12, 15.5, 53.25, 55],
               [-10, -5, 50, 60],
-              [-10, 10, 40, 60],
+              # [-10, 10, 40, 60],
               [-95., -87., 28., 31.0])
     for window in windows:
         print 'window = ', window
         t1 = time.clock()
-        m = gshhs(window=window, resolution='i', area_thresh=0., max_level=1)
+        m = gshhs(window=window, resolution='f', area_thresh=0., max_level=1)
         t2 = time.clock()
         print 'gshhs time: ' + str(t2-t1) + ' seconds'
         m.plot()
