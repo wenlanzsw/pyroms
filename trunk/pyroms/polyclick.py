@@ -55,7 +55,7 @@ class BoundaryInteractor:
         if beta is None:
             self.beta = zeros(len(x))
         else:
-            self.beta = beta
+            self.beta = asarray(beta)
         
         self.pline = Line2D([], [], marker='^', markersize=20,
                             markerfacecolor='g', animated=True, lw=0)
@@ -78,8 +78,8 @@ class BoundaryInteractor:
         self.canvas.mpl_connect('key_press_event', self.key_press_callback)
         self.canvas.mpl_connect('button_release_event', self.button_release_callback)
         self.canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
-
-
+        
+    
     def draw_callback(self, event):
         self.background = self.canvas.copy_from_bbox(self.ax.bbox)
         self.ax.draw_artist(self.poly)
@@ -222,7 +222,7 @@ class BoundaryInteractor:
         self.canvas.blit(self.ax.bbox)
 
 
-class PolyClick(object):
+class BoundaryClick(object):
     """
     p = PolyClick()
     
@@ -245,11 +245,8 @@ class PolyClick(object):
         verts = zip(self._xdata, self._ydata)
         poly = Polygon(verts, alpha=0.2, fc='k', animated=True)
         self._ax.add_patch(poly)
-        self._pi = BoundaryInteractor(self._ax, poly)
+        self._pi = BoundaryInteractor(self._ax, poly, beta=self._beta)
         # self._ax.add_line(self._pi.line)
-        self.get_xdata = self._pi.line.get_xdata
-        self.get_ydata = self._pi.line.get_ydata
-        self.beta = self._pi.beta
     
     def _on_key(self, event):
         if event.key is 'enter':
@@ -261,12 +258,14 @@ class PolyClick(object):
         self._line.set_data(self._xdata, self._ydata)
         self._ax.figure.canvas.draw_idle()
     
-    def __init__(self, xdata=[], ydata=[], ax=None):
+    def __init__(self, xdata=[], ydata=[], beta=None, ax=None):
         
         if ax is None: ax = pl.gca()
         self._ax = ax
         
-        self._xdata = list(xdata); self._ydata = list(ydata)
+        self._xdata = list(xdata);
+        self._ydata = list(ydata)
+        self._beta = beta
         self._pi = None
         self._line = pl.Line2D(self._xdata,self._ydata,marker='o', markerfacecolor='b')
         self._ax.add_line(self._line)
@@ -287,17 +286,24 @@ class PolyClick(object):
             return self._ydata
         else:
             return self._pi.line.get_ydata() 
+    
+    def get_beta(self):
+        if self._pi is None:
+            return self._beta
+        else:
+            return self._pi.beta 
 
     def get_verts(self):
         return zip(self.get_xdata(), self.get_ydata())
 
     x = property(get_xdata)
     y = property(get_ydata)
+    beta = property(get_beta)
     verts = property(get_verts)
 
 
 
 if __name__ == '__main__':
-    p = PolyClick()
+    p = BoundaryClick()
     pl.show()
 

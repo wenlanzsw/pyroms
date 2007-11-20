@@ -32,9 +32,11 @@ class Depths(object):
         hdim = len(shape(h))
 
     def _get_sc(self):
-        sc = linspace(-1.0, 0.0, self.N+1)
         if self.grid == 'rho':
+            sc = linspace(-1.0, 0.0, self.N+1)
             sc = 0.5*(sc[1:]+sc[:-1])
+        else:
+            sc = linspace(-1.0, 0.0, self.N)
         return sc
     
     sc = property(_get_sc)
