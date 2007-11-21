@@ -26,7 +26,6 @@ Topic :: Scientific/Engineering
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-
 from numpy.distutils.core import Extension
 
 iso = Extension(name = '_iso',
@@ -34,6 +33,12 @@ iso = Extension(name = '_iso',
 
 step3d_t = Extension(name = '_step3d_t',
                      sources = ['pyroms/step3d_t.f'])
+
+delaunay = Extension(name = '_delaunay',
+                     sources=["pyroms/delaunay/_delaunay.cpp",
+                              "pyroms/delaunay/VoronoiDiagramGenerator.cpp",
+                              "pyroms/delaunay/delaunay_utils.cpp",
+                              "pyroms/delaunay/natneighbors.cpp"])
 
 doclines = __doc__.split("\n")
 
@@ -54,10 +59,10 @@ if __name__ == '__main__':
           author = "Robert Hetland",
           author_email = "hetland@tamu.edu",
           url = "http://code.google.com/p/pyroms/",
-          packages = ['pyroms'],
+          packages = ['pyroms', 'pyroms/delaunay'],
           license = 'MIT',
           platforms = ["any"],
-          ext_modules = [iso, step3d_t],
+          ext_modules = [iso, step3d_t, delaunay],
           classifiers = filter(None, classifiers.split("\n")),
           package_data = package_data,
           )
