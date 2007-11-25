@@ -1,10 +1,21 @@
-# encoding: utf-8
+'''A wrapper for netCDF4.Dataset and MFnetCDF4.Dataset
 
-# Dataset
-# Copyright (c) 2006 Robert Hetland
+possible uses include:
+
+with an input of a string:
+  nc = pyroms.Dataset(file) # returns netCDF4.Dataset object based on file
+  nc = pyroms.MFDataset(file) # returns MFnetCDF4.Dataset object based on file (with wildcard chars)
+
+with an input of a list of files:
+  nc = pyroms.Dataset(files) # returns MFnetCDF4.Dataset object based on list of files
+  nc = pyroms.MFDataset(files) # returns MFnetCDF4.Dataset object based on list of files
+
+with an input of a netCDF4.Dataset or MFnetCDF4.Dataset object:
+  nc = pyroms.Dataset(nc) # passes through netCDF4.Dataset or MFnetCDF4.Dataset object
+  nc = pyroms.MFDataset(nc) # passes through MFnetCDF4.Dataset object based on file (with wildcard chars)
+'''
 
 try:
-    import netCDF4
     import netCDF4
     try:
         import MFnetCDF4
@@ -27,6 +38,8 @@ try:
             return ncfile
         else:
             raise TypeError, 'type %s not supported' % type(ncfile)
+    
+    Dataset.__doc__ = __doc__
 
     def MFDataset(ncfile):
         """Return an MFnetCDF4 object given a string or list.  A string is expanded
@@ -42,6 +55,8 @@ try:
         else:
             raise TypeError, 'type %s not supported' % type(ncfile)
             return MFnetCDF4.Dataset(files)
+    
+    MFDataset.__doc__ = __doc__
 
 except:
     import pupynere
@@ -56,13 +71,11 @@ except:
             return ncfile
         else:
             raise TypeError, 'type %s not supported' % type(ncfile)
+    
+    Dataset.__doc__ = __doc__
 
 
 if __name__ == '__main__':
-    nc = Dataset('/Users/rob/Models/roms/roms-3.0/ocean_his.nc')
-    nc1 = Dataset(nc)
-    print nc.variables.keys()
-    print nc1.variables.keys()
-    
-    print nc1 is nc
+    pass
+    # need some better testing...
         
