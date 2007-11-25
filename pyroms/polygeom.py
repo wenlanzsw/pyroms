@@ -159,7 +159,7 @@ class Polygeom(np.ndarray):
                "Points should be of shape Nx2, is %s" % str(points.shape)
         return npnpoly(self.verts,points).astype(bool)
     
-    def area(self):
+    def get_area(self):
         """
         Return the area of the polygon.
 
@@ -171,12 +171,15 @@ class Polygeom(np.ndarray):
         v_second = v[1:]
         return np.diff(v_first*v_second).sum()/2.0
 
-    def centroid(self):
+    def get_centroid(self):
         "Return the centroid of the polygon"
         v = self.verts
         a = np.diff(v[:-1][:,[1,0]]*v[1:])
         area = a.sum()/2.0
         return ((v[:-1,:] + v[1:,:])*a).sum(axis=0) / (6.0*area)
+    
+    area = property(get_area)
+    centroid = property(get_centroid)
 
 if __name__ == '__main__':
     import pylab as pl
@@ -188,12 +191,12 @@ if __name__ == '__main__':
                       [0.85,0.85],
                       [0.15,0.85]])
     pa = Polygeom(verts)
-    print pa.area()
+    print pa.area
     print (0.85-0.15)**2
     
     print pa
     
-    print pa.centroid()
+    print pa.centroid
     
     # concave enclosure test-case for inside.
     verts = np.array([[0.15,0.15],
@@ -212,8 +215,8 @@ if __name__ == '__main__':
     pl.plot(grid[:,0][inside], grid[:,1][inside], 'g.')
     pl.plot(grid[:,0][~inside], grid[:,1][~inside],'r.')
     pl.plot(pb.verts[:,0],pb.verts[:,1], '-k')
-    print pb.centroid()
-    xc, yc = pb.centroid()
+    print pb.centroid
+    xc, yc = pb.centroid
     print xc, yc
     pl.plot([xc], [yc], 'co')
     pl.show()
@@ -230,7 +233,7 @@ if __name__ == '__main__':
     pl.plot(grid[:,0][inside], grid[:,1][inside], 'g.')
     pl.plot(grid[:,0][~inside], grid[:,1][~inside], 'r.')
     pl.plot(pc.verts[:,0], pc.verts[:,1], '-k')
-    xc, yc = pc.centroid()
+    xc, yc = pc.centroid
     print xc, yc
     pl.plot([xc], [yc], 'co')
     pl.show()
