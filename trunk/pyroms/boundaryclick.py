@@ -53,11 +53,11 @@ class BoundaryClick(object):
     
     Methods:
     
-        bry.write_bry(bry_file='bry.pickle)
+        bry.write_bry(bry_file)
             Write the current boundary informtion (bry.x, bry.y, bry.beta) to a cPickle
             file bry_file.
         
-        bry.read_bry(bry_file='bry.pickle)
+        bry.read_bry(bry_file)
             Read in boundary informtion (x, y, beta) from the cPickle file bry_file.
         
         bry.remove_grid()  
@@ -339,14 +339,12 @@ class BoundaryClick(object):
         if len(x) > 0:
             self._init_boundary_interactor()
     
-    def write_bry(self, bry_file=None):
-        if bry_file is None: bry_file = self.bry_file
+    def write_bry(self, bry_file):
         f = open(bry_file, 'wb')
         cPickle.dump((self.x, self.y, self.beta), f)
         f.close()
     
-    def read_bry(self, bry_file=None):
-        if bry_file is None: bry_file = self.bry_file
+    def read_bry(self, bry_file):
         x, y, self.beta = load(bry_file)
         self._line.set_data(x, y)
         if hasattr(self, '_poly'):
