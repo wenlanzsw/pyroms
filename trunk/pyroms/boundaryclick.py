@@ -96,7 +96,7 @@ class BoundaryClick(object):
         """Remove a generated grid from the BoundaryClick figure"""
         if hasattr(self, '_gridlines'):
             for line in self._gridlines:
-                line._remove_method(line)
+                self._ax.lines.remove(line)
             delattr(self, '_gridlines')
     
     def _init_boundary_interactor(self):
@@ -256,7 +256,6 @@ class BoundaryClick(object):
             self.grd = pyroms.gridgen(self.x, self.y, self.beta, shp, **options)
             self.remove_grid()
             self._showgrid = True
-            # axlim = self._ax.axis()
             gridlineprops = {'linestyle':'-', 'color':'k', 'lw':0.25, 'alpha':0.5}
             self._gridlines = []
             for line in self._ax._get_lines(*(self.grd.x, self.grd.y), **gridlineprops):
@@ -265,7 +264,6 @@ class BoundaryClick(object):
             for line in self._ax._get_lines(*(self.grd.x.T, self.grd.y.T), **gridlineprops):
                 self._ax.add_line(line)
                 self._gridlines.append(line)
-            # self._ax.axis(axlim)
         elif event.key=='R':
             self.remove_grid()
         elif event.key=='T':
