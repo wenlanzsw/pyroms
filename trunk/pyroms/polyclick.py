@@ -14,19 +14,22 @@ from pyroms import Polygeom
 from matplotlib.artist import Artist
 from matplotlib.patches import Polygon, CirclePolygon
 from matplotlib.lines import Line2D
-from matplotlib.numerix import sqrt, nonzero, equal, asarray, dot, Float
 from matplotlib.numerix.mlab import amin
 from matplotlib.mlab import dist_point_to_segment
 
 
 class PolyClick(object):
     """
-    bry = PolyClick(verts, ax=gca())
+    p = PolyClick()                     # Start interactive polygon generator, or
+    p = PolyClick(verts, ax=gca())      # Initialize polygon based on verts, or
+    p = PolyClick(x, y, ax=gca())       # Initialize polygon based on x and y, or
+    p = PolyClick('verts.pickle', ax=gca())  # Load in verts from pickle file
     
-    If verts are not given, an interactive polygon creation session is started.
-    Switch to editing mode by hitting return. This changes the vertecies to black. The
-    points may be moved with the mouse, or modified with the key commands listed below.
-    Current data are always available in bry.x, bry.y and bry.verts.
+    If verts or (x, y) are not given, an interactive polygon creation session is
+    started. Verticies are orange. Switch to editing mode by hitting return. This
+    changes the vertecies to black. The points may be moved with the mouse, or
+    modified with the key commands listed below. Current data are always
+    available in bry.x, bry.y and bry.verts.
     
     Key commands:
         
@@ -38,12 +41,23 @@ class PolyClick(object):
         
     Methods:
     
-        bry.write_bry(bry_file='bry.pickle)
+        p.dump(bry_file='bry.pickle)
             Write the current boundary informtion (bry.verts) to a cPickle
             file bry_file.
         
-        bry.read_bry(bry_file='bry.pickle)
+        p.load(bry_file='bry.pickle)
             Read in boundary informtion (verts) from the cPickle file bry_file.
+        
+    Attributes:
+        
+        p.x, p.y : The x and y locations of the polygon verticies.
+        
+        p.verts : The verticies of the polygon (equiv. to zip(x, y))
+        
+        p.area : the area of the polygon.  Positive for a counterclockwise path,
+                 negative for a clockwise path.
+        
+        p.centroid : the (x, y) location of the polygon centroid.
         
     """
     
@@ -210,12 +224,12 @@ class PolyClick(object):
         if len(x) > 0:
             self._init_boundary_interactor()
     
-    def write_poly(self, poly_file):
+    def dump(self, poly_file):
         f = open(bry_file, 'wb')
-        cPickle.dump(self.verts, f)
+        cPickle.dump(self.verts, f, protocol=-1)
         f.close()
     
-    def read_poly(self, poly_file):
+    def load(self, poly_file):
         verts = load(bry_file)
         x, y = zip(*verts)
         self._line.set_data(x, y)
@@ -247,12 +261,12 @@ class PolyClick(object):
     y = property(get_ydata)
     
     def _get_geom(self): return Polygeom(self.verts)
-    geom = property(_get_geom)
+    _geom = property(_get_geom)
     
-    def _get_area(self): return self.geom.area
+    def _get_area(self): return self._geom.area
     area = property(_get_area)
     
-    def _get_centroid(self): return self.geom.centroid
+    def _get_centroid(self): return self._geom.centroid
     centroid = property(_get_centroid)
 
 
