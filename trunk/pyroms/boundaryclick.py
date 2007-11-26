@@ -106,7 +106,7 @@ class BoundaryClick(object):
         self._ax.figure.canvas.mpl_disconnect(self._click_id)
         
         # Shade the selected region in a polygon
-        self._poly = Polygon(self.verts, alpha=0.2, fc='k', animated=True)
+        self._poly = Polygon(self.verts, alpha=0.1, fc='k', animated=True)
         self._ax.add_patch(self._poly)
         
         # change line to animated
@@ -138,7 +138,7 @@ class BoundaryClick(object):
         self._canvas.mpl_connect('motion_notify_event', self._motion_notify_callback)
     
     def _on_return(self, event):
-        if event.key is 'enter':
+        if event.key in ('enter', None):
             self._init_boundary_interactor()
     
     def _on_click(self, event):
@@ -200,10 +200,8 @@ class BoundaryClick(object):
     def _key_press_callback(self, event):
         'whenever a key is pressed'
         if not event.inaxes: return
-        # if event.key=='t':
-        #     self._showverts = not self._showverts
-        #     self._line.set_visible(self._showverts)
-        #     if not self._showverts: self._ind = None
+        if event.key=='shift': return
+        
         if event.key=='t':
             self._showbetas = not self._showbetas
             self._pline.set_visible(self._showbetas)
@@ -215,6 +213,7 @@ class BoundaryClick(object):
             if ind is not None:
                 self._poly.xy = [tup for i,tup in enumerate(self._poly.xy) if i!=ind]
                 self._line.set_data(zip(*self._poly.xy))
+                self.beta = [beta for i,beta in enumerate(self.beta) if i!=ind]
         elif event.key=='p':
             ind = self._get_ind_under_point(event)
             if ind is not None:
@@ -256,7 +255,7 @@ class BoundaryClick(object):
             self.grd = pyroms.gridgen(self.x, self.y, self.beta, shp, **options)
             self.remove_grid()
             self._showgrid = True
-            gridlineprops = {'linestyle':'-', 'color':'k', 'lw':0.25, 'alpha':0.5}
+            gridlineprops = {'linestyle':'-', 'color':'k', 'lw':0.2}
             self._gridlines = []
             for line in self._ax._get_lines(*(self.grd.x, self.grd.y), **gridlineprops):
                 self._ax.add_line(line)
@@ -268,11 +267,8 @@ class BoundaryClick(object):
             self.remove_grid()
         elif event.key=='T':
             self._showgrid = not self._showgrid
-            if hasattr(self, '_lines'):
-                for line in self._lines:
-                    line.set_visible(self._showgrid)
-            if hasattr(self, '_linesT'):
-                for line in self._linesT:
+            if hasattr(self, '_gridlines'):
+                for line in self._gridlines:
                     line.set_visible(self._showgrid)
         
         self._update_beta_lines()
@@ -380,8 +376,8 @@ if __name__ == '__main__':
     fig=pl.figure()
     # background color will be used for 'wet' areas.
     fig.add_axes([0.1,0.1,0.8,0.8],axisbg='azure')
-    m.drawcoastlines()
-    m.fillcontinents(color='tan')
+    m.drawcoastlines(linewidth=0.25)
+    m.fillcontinents(color='beige')
     
     x, y, beta = zip(*[(241782.65384467551, 1019981.3539730886,   1.0),
                        (263546.12512432877,  686274.79435173667,  0),
