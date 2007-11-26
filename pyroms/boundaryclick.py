@@ -16,7 +16,6 @@ import cPickle
 from matplotlib.artist import Artist
 from matplotlib.patches import Polygon, CirclePolygon
 from matplotlib.lines import Line2D
-from matplotlib.numerix import sqrt, nonzero, equal, asarray, dot, Float
 from matplotlib.numerix.mlab import amin
 from matplotlib.mlab import dist_point_to_segment
 
@@ -53,11 +52,11 @@ class BoundaryClick(object):
     
     Methods:
     
-        bry.write_bry(bry_file)
+        bry.dump(bry_file)
             Write the current boundary informtion (bry.x, bry.y, bry.beta) to a cPickle
             file bry_file.
         
-        bry.read_bry(bry_file)
+        bry.load(bry_file)
             Read in boundary informtion (x, y, beta) from the cPickle file bry_file.
         
         bry.remove_grid()  
@@ -339,13 +338,17 @@ class BoundaryClick(object):
         if len(x) > 0:
             self._init_boundary_interactor()
     
-    def write_bry(self, bry_file):
+    def dump(self, bry_file):
         f = open(bry_file, 'wb')
-        cPickle.dump((self.x, self.y, self.beta), f)
+        bry_dict = {'x': self.x, 'y': self.y, 'beta': self.beta}
+        cPickle.dump(bry_dict, f, protocol=-1)
         f.close()
     
-    def read_bry(self, bry_file):
-        x, y, self.beta = load(bry_file)
+    def load(self, bry_file):
+        bry_dict = load(bry_file)
+        x = bry_dict['x']
+        y = bry_dict['y']
+        beta = bry_dict['beta']
         self._line.set_data(x, y)
         if hasattr(self, '_poly'):
             self._poly.xy = zip(x, y)
@@ -353,7 +356,7 @@ class BoundaryClick(object):
             self._draw_callback(None)
             self._canvas.draw()
     
-    def _get_verts(self):return zip(self.x, self.y)
+    def _get_verts(self): return zip(self.x, self.y)
     verts = property(_get_verts)    
     def get_xdata(self): return self._line.get_xdata()
     x = property(get_xdata)
