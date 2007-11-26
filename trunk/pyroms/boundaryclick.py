@@ -96,7 +96,7 @@ class BoundaryClick(object):
         """Remove a generated grid from the BoundaryClick figure"""
         if hasattr(self, '_gridlines'):
             for line in self._gridlines:
-                line.remove()
+                line._remove_method(line)
             delattr(self, '_gridlines')
     
     def _init_boundary_interactor(self):
@@ -266,7 +266,7 @@ class BoundaryClick(object):
                 self._ax.add_line(line)
                 self._gridlines.append(line)
             # self._ax.axis(axlim)
-        elif event.key=='D':
+        elif event.key=='R':
             self.remove_grid()
         elif event.key=='T':
             self._showgrid = not self._showgrid
