@@ -362,6 +362,7 @@ class BoundaryClick(object):
 if __name__ == '__main__':
     from matplotlib.toolkits.basemap import Basemap
     from matplotlib.ticker import FuncFormatter
+    from pyroms.focus import Focus
     
     m = Basemap(projection='lcc', 
                 resolution='i',
@@ -398,6 +399,10 @@ if __name__ == '__main__':
                        (691561.06029084534,  693529.28477828787, -1.0),
                        (510198.79962706729, 1128798.7103713555,   1.0)])
     
-    p = BoundaryClick(x=x, y=y, beta=beta)
+    focus = Focus(0.5, 0.45, factor=3.0, Rx=10.0, Ry=0.2)
+    focus.add_focus_point(0.15, 0.0, factor=3.0, Rx=0.2, Ry=10.0)
+    
+    p = BoundaryClick(x=x, y=y, beta=beta, focus=focus)
+    
     pl.show()
 
