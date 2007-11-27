@@ -248,8 +248,7 @@ class PolyClick(object):
             y = list(args[1])
             assert len(x) == len(y), 'x and y must have the same length.'
             verts = zip(x, y)
-        return self.geom.inside(verts)
-        
+        return self._geom.inside(verts)
     
     def get_verts(self):return zip(self.x, self.y)
     verts = property(get_verts)    
