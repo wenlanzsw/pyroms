@@ -4,7 +4,7 @@ Tools for working with oceanic data
 """
 from numpy import *
 
-def rho_stp(s,t,p=0):
+def eq_state(s,t,p=0):
     """
     returns density as a function of:
      s = Salinity in psu,
