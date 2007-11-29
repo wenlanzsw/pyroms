@@ -20,7 +20,7 @@ from roms_tools import zatr, zatw, scoordr, scoordw, isoslice, shrink, gc_dist, 
                        rot2d, zslice, iso_integrate, surface, N2, nc_N2, \
                        nc_gls_dissipation, nc_curl, nc_div, nc_pstrain, transect
 
-from ocean import rho_stp, o2_sat
+from ocean import eq_state, o2_sat
 from polygeom import Polygeom
 from polyclick import PolyClick
 from boundaryclick import BoundaryClick

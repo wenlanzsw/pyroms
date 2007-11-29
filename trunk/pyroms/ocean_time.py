@@ -1,80 +1,100 @@
 # encoding: utf-8
 
 # cdftime
-# Copyright (c) 2006 Robert Hetland
+# Copyright (c) 2006 Robert Hetland & Richard Hofmeister
 
 
 from numpy import *
-from netcdftime import utime
 import netCDF4, datetime
-from pylab import date2num
+from dateutil.parser import parse
+from pylab import date2num,num2date
 from pyroms import Dataset
 
 class ocean_time (ndarray):
     
+    _unit2sec={}
+    _unit2sec['seconds'] = 1.0
+    _unit2sec['minutes'] = 60.0
+    _unit2sec['hours'] = 3600.0
+    _unit2sec['days'] = 3600.0*24.0
+    _unit2sec['weeks'] = 3600.0*24.0*7.0
+    _unit2sec['years'] = 3600.0*24.0*365.242198781 #ref to udunits
+
+    _sec2unit={}
+    _sec2unit['seconds'] = 1.0
+    _sec2unit['minutes'] = 1.0/60.0
+    _sec2unit['hours'] = 1.0/3600.0
+    _sec2unit['days'] = 1.0/(24.0*3600.0)
+
     def __new__(self, ncfile, name='ocean_time', units=None, **kwargs):
         self._nc = Dataset(ncfile)
-        romstime = self._nc.variables[name][:]
+        data = self._nc.variables[name][:]
         if units == None:
             self._units = self._nc.variables[name].units
         else:
             self._units = units
-        self._utime = utime(self._units, **kwargs)
-        self.origin = self._utime.origin
-        self.dates = self._utime.num2date(romstime)
         
-        return romstime.view(ocean_time)
+        units_split=self._units.split(' ',2)
+        assert len(units_split) == 3 and units_split[1] == 'since', \
+            'units string improperly formatted\n' + self._units
+        self.origin=parse(units_split[2])
+        
+        self._units = units_split[0].lower()
+        
+        # compatibility to CF convention v1.0/udunits names:
+        if self._units in ['second','sec','secs','s']:
+            self._units='seconds'
+        if self._units in ['min','minute','mins']:
+            self._units='minutes'
+        if self._units in ['h','hs','hr','hrs','hour']:
+            self._units='hours'
+        if self._units in ['day','d','ds']:
+            self._units='days'
+
+        return data.view(ocean_time)
     
     def nearest_index(self, dateo):
-        to = self._utime.date2num(dateo)
-        print 'to = ', to
-        t = self._utime.date2num(self.dates)
-        print 't = ', t
-        return where(abs(t-to) == min(abs(t-to)))
+        to = date2num(dateo)
+        return where(abs(self.jd-to) == min(abs(self.jd-to)))[0]
     
     def nearest(self, dateo):
-        return self.dates[self.nearest_index(dateo)]
+        """
+        find nearest model timestep,
+        input and output are datetime objects
+        """
+        # one might choose the second value for 
+        #if len(self.nearest_index(dateo)) == 1:
+        #    res=self.jd[self.nearest_index(dateo)][0]
+        #else:
+        #    res=self.jd[self.nearest_index(dateo)][1]
+        return num2date(self.jd[self.nearest_index(dateo)][0])
     
     def get_seconds(self):
-        self._utime.units = 'seconds'
-        return self._utime.date2num(self.dates)
+        fac = self._unit2sec[self._units] * self._sec2unit['seconds']
+        return self*fac
     
     def get_minutes(self):
-        self._utime.units = 'minutes'
-        return self._utime.date2num(self.dates)
-    
+        fac = self._unit2sec[self._units] * self._sec2unit['minutes']
+        return self*fac
+
     def get_hours(self):
-        self._utime.units = 'hours'
-        return self._utime.date2num(self.dates)
+        fac = self._unit2sec[self._units] * self._sec2unit['hours']
+        return self*fac
     
     def get_days(self):
-        self._utime.units = 'days'
-        return self._utime.date2num(self.dates)
+        fac = self._unit2sec[self._units] * self._sec2unit['days']
+        return asarray(self,dtype='float64')*fac
     
     def get_jd(self):
-        return date2num(self.dates)
+        return (date2num(self.origin)+self.days)
+
+    def get_dates(self):
+        return num2date(self.jd)
         
     jd = property(get_jd, None, doc="Julian day, for plotting in pylab")
     seconds = property(get_seconds, None, doc="seconds")
     minutes = property(get_minutes, None, doc="minutes")
     hours = property(get_hours, None, doc="hours")
     days = property(get_days, None, doc="days")
+    dates = property(get_dates, None, doc="datetime objects")
 
-if __name__ == '__main__':
-    nc = netCDF4.Dataset('/Volumes/Scratch/near_5_250.0_his.nc')
-    time = time(nc,time='ocean_time')
-    print time.dates
-    print time.dates[4:8]
-    print time._utime.units
-    print time
-    print time[2:8]
-    print time.seconds
-    print time.days
-    print time.hours
-    do = datetime.datetime(1,01,01)
-    print time.nearest_index(do)
-    print time.nearest(do)
-    
-    print time[:]
-    print len(time)
-    
