@@ -104,18 +104,32 @@ class PolyClick(object):
     
     def _get_ind_under_point(self, event):
         'get the index of the vertex under point if within epsilon tolerance'
-        x, y = zip(*self._poly.xy)
-        
-        # display coords
-        xt, yt = self._poly.get_transform().numerix_x_y(x, y)
-        d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
-        indseq = nonzero(equal(d, amin(d)))
-        ind = indseq[0]
-        
-        if d[ind]>=self._epsilon:
-            ind = None
-        
-        return ind
+        try:
+            x, y = zip(*self._poly.xy)
+
+            # display coords
+            xt, yt = self._poly.get_transform().numerix_x_y(x, y)
+            d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
+            indseq = nonzero(equal(d, amin(d)))
+            ind = indseq[0]
+
+            if d[ind]>=self._epsilon:
+                ind = None
+
+            return ind
+        except:
+            # display coords
+            xy = asarray(self._poly.xy)
+            xyt = self._poly.get_transform().transform(xy)
+            xt, yt = xyt[:, 0], xyt[:, 1]
+            d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
+            indseq = nonzero(equal(d, amin(d)))[0]
+            ind = indseq[0]
+
+            if d[ind]>=self._epsilon:
+                ind = None
+
+            return ind
     
     def _button_press_callback(self, event):
         'whenever a mouse button is pressed'
@@ -178,7 +192,7 @@ class PolyClick(object):
         self._canvas.blit(self._ax.bbox)
     
     def _on_return(self, event):
-        if event.key is 'enter':
+        if event.key in ('enter', None):
             self._init_boundary_interactor()
     
     def _on_click(self, event):
@@ -271,6 +285,7 @@ class PolyClick(object):
 
 if __name__ == '__main__':
     x, y = random.rand(2, 100)
+    
     pl.plot(x, y, '.')
     
     p = PolyClick()

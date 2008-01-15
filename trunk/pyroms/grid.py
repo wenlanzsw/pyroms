@@ -113,10 +113,10 @@ class Grid(object):
             self.mask_rho = asarray(~(~bool_(self.mask_rho) | mask), dtype='d')
         
         if (self.x_vert is None or self.y_vert is None) and self.geographic:
-            self.calc_projection()
+            self.calculate_projection()
         
         if self.pn is None or self.pm is None or self.angle is None:
-            self.calc_metrics()
+            self.calculate_metrics()
         
         if self.geographic and f is None:
             self.f = 2 * 7.29e-5 * cos(self.lat_rho * pi / 180.)
@@ -235,7 +235,7 @@ class Grid(object):
                 - tanh(0.5*self.theta_s))/tanh(0.5*self.theta_s)
     
     
-    def calc_metrics(self):
+    def calculate_metrics(self):
         'Calculates pm, pn, dndx, dmde, and angle from x_vert and y_vert'
         if self.geographic:
             gc_dist = vectorize(lambda lon1, lat1, lon2, lat2: \
@@ -284,14 +284,14 @@ class Grid(object):
         self.dmde[1:-1,1:-1] = 0.5*(1.0/self.pm[2:,1:-1] - 1.0/self.pm[:-2,1:-1])
         
         if self.x_vert is None or self.y_vert is None:
-            self.calc_projection()
+            self.calculate_projection()
         
         self.angle = arctan2(diff(0.5*(self.y_vert[1:,:]+self.y_vert[:-1,:])), \
                            diff(0.5*(self.x_vert[1:,:]+self.x_vert[:-1,:])))
         
         self.angle = extrapolate_mask(self.angle, mask=(self.mask==0.0))
     
-    def calc_projection(self, proj=None):        
+    def calculate_projection(self, proj=None):        
         if isinstance(self.lat_vert, ma.MaskedArray):
             mask_lat = self.lat_vert.mask 
             lat_temp = self.lat_vert.filled(0.0)
@@ -312,7 +312,7 @@ class Grid(object):
         if isinstance(self.lat_vert, ma.MaskedArray):
             self.y_vert = ma.masked_array(self.y_vert, mask=mask_lat)
     
-    def calc_orthogonality(self):
+    def calculate_orthogonality(self):
         '''
         Calculate orthogonality error in radiens
         '''
@@ -453,30 +453,6 @@ class Grid(object):
         
         nc.close()
     
-    
-    def calc_z_w(self, zeta=None):
-        if None in (self.theta_s, self.theta_b, self.hc, self.N): return
-        if self.h is not None and any(self.h<self.hc):
-            raise ValueError, 'hc is less than minimum depth %f' % self.h.min
-        sc_w = self._get_sc_w()[:, newaxis, newaxis]
-        Cs_w = self._get_Cs_w()[:, newaxis, newaxis]
-        z_w = (sc_w-Cs_w)*self.hc + Cs_w*self.h
-        if zeta is not None:
-            z_w = zeta*(1.0 + z_w/self.h)
-        return z_w
-    
-    def calc_z_r(self, zeta=None):
-        if None in (self.theta_s, self.theta_b, self.hc, self.N): return
-        if self.h is not None and any(self.h<self.hc):
-            raise ValueError, 'hc is less than minimum depth %f' % h.min
-        sc_r = self._get_sc_r()[:, newaxis, newaxis]
-        Cs_r = self._get_Cs_r()[:, newaxis, newaxis]
-        z_r = (sc_r-Cs_r)*self.hc + Cs_r*self.h
-        if zeta is not None:
-            z_r = zeta*(1.0 + z_r/self.h)
-        return z_r
-    
-    
     x = property(lambda self: self.x_vert)
     y = property(lambda self: self.y_vert)
     lon = property(lambda self: self.lon_vert)
@@ -507,8 +483,6 @@ class Grid(object):
     sc_r = property(_get_sc_r)
     Cs_w = property(_get_Cs_w)
     Cs_r = property(_get_Cs_r)
-    z_r = property(calc_z_r)
-    z_w = property(calc_z_w)
 
 
 def gridgen(xbry, ybry, beta, shape, focus=None, ul_idx=0, \

@@ -221,6 +221,7 @@ if __name__ == '__main__':
     pl.plot([xc], [yc], 'co')
     pl.show()
     
+    pl.figure()
     # many points in a semicircle, to test speed.
     grid = np.mgrid[0:1:1000j,0:1:1000j].reshape(2,-1).swapaxes(0,1)
     xp = np.sin(np.arange(0,np.pi,0.01))
@@ -230,7 +231,7 @@ if __name__ == '__main__':
     sys.stdout.flush()
     inside = pc.inside(grid)
     print "done."
-    pl.plot(grid[:,0][inside], grid[:,1][inside], 'g.')
+    pl.plot(grid[:,0][inside], grid[:,1][inside], 'g+')
     pl.plot(grid[:,0][~inside], grid[:,1][~inside], 'r.')
     pl.plot(pc.verts[:,0], pc.verts[:,1], '-k')
     xc, yc = pc.centroid

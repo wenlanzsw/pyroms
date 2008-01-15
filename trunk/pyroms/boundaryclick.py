@@ -171,18 +171,32 @@ class BoundaryClick(object):
     
     def _get_ind_under_point(self, event):
         'get the index of the vertex under point if within epsilon tolerance'
-        x, y = zip(*self._poly.xy)
+        try:
+            x, y = zip(*self._poly.xy)
         
-        # display coords
-        xt, yt = self._poly.get_transform().numerix_x_y(x, y)
-        d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
-        indseq = nonzero(equal(d, amin(d)))
-        ind = indseq[0]
+            # display coords
+            xt, yt = self._poly.get_transform().numerix_x_y(x, y)
+            d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
+            indseq = nonzero(equal(d, amin(d)))
+            ind = indseq[0]
         
-        if d[ind]>=self._epsilon:
-            ind = None
+            if d[ind]>=self._epsilon:
+                ind = None
         
-        return ind
+            return ind
+        except:
+            # display coords
+            xy = asarray(self._poly.xy)
+            xyt = self._poly.get_transform().transform(xy)
+            xt, yt = xyt[:, 0], xyt[:, 1]
+            d = sqrt((xt-event.x)**2 + (yt-event.y)**2)
+            indseq = nonzero(equal(d, amin(d)))[0]
+            ind = indseq[0]
+
+            if d[ind]>=self._epsilon:
+                ind = None
+
+            return ind
     
     def _button_press_callback(self, event):
         'whenever a mouse button is pressed'
@@ -249,7 +263,7 @@ class BoundaryClick(object):
                 self._poly.xy.append((event.xdata, event.ydata))
                 self._line.set_data(zip(*self._poly.xy))
                 self.beta.append(0)
-        elif event.key=='G':
+        elif event.key=='G' or event.key == '1':
             options = copy.deepcopy(self.gridgen_options)
             shp = options.pop('shp')
             self.grd = pyroms.gridgen(self.x, self.y, self.beta, shp, **options)
@@ -265,7 +279,7 @@ class BoundaryClick(object):
                 self._gridlines.append(line)
         elif event.key=='R':
             self.remove_grid()
-        elif event.key=='T':
+        elif event.key=='T' or event.key == '2':
             self._showgrid = not self._showgrid
             if hasattr(self, '_gridlines'):
                 for line in self._gridlines:
