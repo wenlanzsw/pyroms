@@ -28,7 +28,7 @@ class ocean_time (ndarray):
 
     def __new__(self, ncfile, name='ocean_time', units=None, **kwargs):
         self._nc = Dataset(ncfile)
-        data = self._nc.variables[name][:]
+        data = self._nc.variables[name][:].astype('d')
         if units == None:
             self._units = self._nc.variables[name].units
         else:
@@ -83,13 +83,13 @@ class ocean_time (ndarray):
     
     def get_days(self):
         fac = self._unit2sec[self._units] * self._sec2unit['days']
-        return asarray(self,dtype='float64')*fac
+        return self*fac
     
     def get_jd(self):
-        return (date2num(self.origin)+self.days)
+        return asarray((date2num(self.origin)+self.days))
 
     def get_dates(self):
-        return num2date(self.jd)
+        return asarray(num2date(self.jd))
         
     jd = property(get_jd, None, doc="Julian day, for plotting in pylab")
     seconds = property(get_seconds, None, doc="seconds")
