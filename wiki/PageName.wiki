@@ -66,11 +66,11 @@ http://code.google.com/p/netcdf4-python/downloads/list
 
 or via the following *Subversion* command:
 
-svn checkout http://netcdf4-python.googlecode.com/svn/trunk/ netcdf4-python-read-only
+{{{svn checkout http://netcdf4-python.googlecode.com/svn/trunk/ netcdf4-python-read-only}}}
 
 with the former offering a more stable release, and the latter a bleeding-edge version which probably has more functionality.
 
-Assuming you took the latter option, installation is as follows.  Note carefully that the {{{/opt/hdf5}}} and {{{/opt/netcdf4}}} are just placeholders in these instructions.  These are the locations where the netCDF4 and HDF5 libraries are installed, and will almost certainly be different on your system.
+Assuming you took the latter option, installation is as follows.  Note carefully that the {{{/opt/hdf5}}} and {{{/opt/netcdf4}}} are just placeholders in these instructions.  These are the locations where the netCDF4 and HDF5 libraries are installed, and will almost certainly be different on your system.  And they *must* be specified as the installation script will not look for them.
 
 {{{
 cd netcdf4-python-read-only
@@ -79,7 +79,41 @@ export NETCDF4_DIR=/opt/netcdf4
 python setup.py build
 su
 python setup.py install
+exit
 }}}
+
+== numpy and scipy ==
+
+The *numpy* and *scipy* packages can be thought of as Matlab without the fees, i.e. a free
+system for performing numerical and scientific calculations.  They can be downloaded from:
+
+http://www.scipy.org/Download
+
+which also gives the choice of official releases or Subversion repository checkouts.  Assuming again that you choose the latter, they can be obtained via:
+
+{{{
+svn co http://scipy.org/svn/numpy/trunk numpy
+svn co http://scipy.org/svn/scipy/trunk scipy
+}}}
+
+which will download the latest source code into subdirectories named {{{numpy}}} and {{{scipy}}}.  It would be a very good idea to read the installation instructions available at the Scipy site before you perform the following greatly simplified instructions.  There are additional packages that can be installed to enhance both the performance and functionality of *numpy* and *scipy*, and it is a very good idea to do so.  But we will not give those instructions here, again to avoid getting lost too far down the branching prerequisite trail.  That being said, here are the quickie installation instructions:
+
+{{{
+cd numpy
+python setup.py build
+su
+python setup.py install
+exit
+cd ../scipy
+python setup.py build
+su
+python setup.py install
+exit
+}}}
+
+== matplotlib and basemap ==
+
+
 
 = Obtaining and Installing pyroms =
 
@@ -98,6 +132,7 @@ cd pyroms-read-only
 python setup.py build
 su
 python setup.py install
+exit
 }}}
 
 You can now test if it has been properly installed by invoking the Python command-line interpreter:
