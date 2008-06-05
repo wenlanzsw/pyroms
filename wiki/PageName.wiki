@@ -4,7 +4,53 @@
 
 The tools are based on [http://python.org python], [http://numpy.scipy.org/ numpy] (with the full [http://www.scipy.org scipy] package also recommended), [http://matplotlib.sourceforge.net matplotlib] (with the [http://matplotlib.sourceforge.net/matplotlib.toolkits.basemap.basemap.html basemap toolkit]), and [http://code.google.com/p/netcdf4-python/ netcdf4-python].  The grid generation is based on the command line utility [http://www.marine.csiro.au/~sakov/  gridgen].  All of these packages should be installed for your best and most fulfilling pyroms experience.
 
-= Obtaining and Installing =
+= Obtaining and Installing the Prerequisites =
+
+== gridgen ==
+
+The command-line program *gridgen* is an orthogonal grid generator for the interiors of polygonal regions.  It is used for generating grids for our regional, coastal and estuarine hydrodynamic models, and can be obtained from:
+
+http://www.marine.csiro.au/~sak007/
+
+The full functionality of *gridgen* requires that you also install *gridutils*, which in turn requires *nn* and *csa* for full software satisfaction.  You can install *gridgen* without these, but it's easier to install full functionality at the start than to attempt to backtrack later.  To do so, download {{{gridgen.tar.gz}}}, {{{gridutils.tar.gz}}}, {{{csa.tar.gz}}} and {{{nn.tar.gz}}}, all of which are available on the indicated page.
+
+Once you have downloaded these source code packages, you compile and install them as follows (with the following commands assuming that you have root access to install the programs for systemwide use):
+
+{{{
+tar xzvf csa.tar.gz
+cd csa
+./configure
+make
+su
+make install
+exit
+cd ..
+tar xzvf nn.tar.gz
+cd nn
+./configure
+make
+su
+make install
+exit
+cd ..
+tar xzvf gridutils.tar.gz
+cd gridutils
+./configure
+make
+su
+make install
+exit
+cd ..
+tar xzvf gridgen.tar.gz
+cd gridgen
+./configure
+make
+su
+make install
+exit
+}}}
+
+= Obtaining and Installing pyroms =
 
 The *pyroms* source code is obtained using the Subversion networked versioning system via the command:
 
