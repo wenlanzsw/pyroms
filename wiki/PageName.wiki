@@ -50,6 +50,37 @@ make install
 exit
 }}}
 
+== netcdf4-python ==
+
+This is a Python interface to the netCDF3 and netCDF4 libraries which, unsurprisingly, also need to be obtained and installed.  To avoid descending the prerequisite hierarchy all the way down to "obtain a computer," we'll just assume that netCDF3 and netCDF4 are already installed on our system.  It's not a trivial task to install them (as well as the HDF5 library required by netCDF4), but there's plenty of good advice on how to do so at the main *netCDF* site at:
+
+http://www.unidata.ucar.edu/software/netcdf/
+
+and the *netcdf-python* site at:
+
+http://code.google.com/p/netcdf4-python/
+
+The *netcdf4-python* package can be obtained from either the official releases page:
+
+http://code.google.com/p/netcdf4-python/downloads/list
+
+or via the following *Subversion* command:
+
+svn checkout http://netcdf4-python.googlecode.com/svn/trunk/ netcdf4-python-read-only
+
+with the former offering a more stable release, and the latter a bleeding-edge version which probably has more functionality.
+
+Assuming you took the latter option, installation is as follows.  Note carefully that the {{{/opt/hdf5}}} and {{{/opt/netcdf4}}} are just placeholders in these instructions.  These are the locations where the netCDF4 and HDF5 libraries are installed, and will almost certainly be different on your system.
+
+{{{
+cd netcdf4-python-read-only
+export HDF5_DIR=/opt/hdf5
+export NETCDF4_DIR=/opt/netcdf4
+python setup.py build
+su
+python setup.py install
+}}}
+
 = Obtaining and Installing pyroms =
 
 The *pyroms* source code is obtained using the Subversion networked versioning system via the command:
