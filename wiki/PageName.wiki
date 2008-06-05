@@ -5,3 +5,30 @@
 The tools are based on [http://python.org python], [http://numpy.scipy.org/ numpy] (with the full [http://www.scipy.org scipy] package also recommended), [http://matplotlib.sourceforge.net matplotlib] (with the [http://matplotlib.sourceforge.net/matplotlib.toolkits.basemap.basemap.html basemap toolkit]), and [http://code.google.com/p/netcdf4-python/ netcdf4-python].  The grid generation is based on the command line utility [http://www.marine.csiro.au/~sakov/  gridgen].  All of these packages should be installed for your best and most fulfilling pyroms experience.
 
 = Obtaining and Installing =
+
+The *pyroms* source code is obtained using the Subversion networked versioning system via the command:
+
+{{{
+svn checkout http://pyroms.googlecode.com/svn/trunk/ pyroms-read-only
+}}}
+
+which will download the source code into the subdirectory {{{pyroms-read-only}}}.  You can change the directory name in the {{{svn}}} command to just {{{pyroms}}} or any other arbitrary name you desire.
+
+Once you have downloaded the code, the following commands will compile and install *pyroms* into your local Python library hierarchy.
+
+{{{
+cd pyroms-read-only
+python setup.py build
+su
+python setup.py install
+}}}
+
+You can now test if it has been properly installed by invoking the Python command-line interpreter:
+
+{{{
+python
+[...]
+>>> import pyroms
+}}}
+
+If you get no error messages when you enter {{{import pyroms}}} from within the interpreter, then you have successfully installed *pyroms*.
