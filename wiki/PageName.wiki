@@ -1,3 +1,19 @@
+=PYROMS IS DEAD --- LONG LIVE OCTANT=
+
+In an effort to be more inclusive to the GETM ( [http://www.getm.net] ) community, I have changed the name of pyroms to octant (and started a new code branch).  You can find it here:
+
+[http://octant.googlecode.com]
+
+Please head on over there, and check out the new code.
+
+
+Thanks,
+
+-Rob
+
+-----------
+
+
 #summary Pyroms is a suite of tools for working with the Regional Ocean Modeling System.
 
 = Introduction =
